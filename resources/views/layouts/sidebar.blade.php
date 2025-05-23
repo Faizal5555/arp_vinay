@@ -2,7 +2,7 @@
     <div class="app-brand demo">
         <a href="index.html" class="app-brand-link">
             <span class="p-3 app-brand-logo demo">
-                <img src="../assets/img/avatars/logo-4.png" alt="chart success" class="rounded"
+                <img src="{{ asset('assets/img/avatars/logo-4.png') }}" alt="chart success" class="rounded"
                     style="width:130px !important;" />
             </span>
         </a>
