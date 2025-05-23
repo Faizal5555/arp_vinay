@@ -23,7 +23,8 @@
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="../assets/img/avatars/vinay.png" alt class="h-auto w-px-40 rounded-circle" />
+                        <img src="{{ asset('assets/img/avatars/Vinay.png') }}" alt
+                            class="h-auto w-px-40 rounded-circle" />
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -32,7 +33,7 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="../assets/img/avatars/vinay.png" alt
+                                        <img src="{{ asset('assets/img/avatars/Vinay.png') }}" alt
                                             class="h-auto w-px-40 rounded-circle" />
                                     </div>
                                 </div>
