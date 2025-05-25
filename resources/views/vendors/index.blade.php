@@ -117,7 +117,7 @@
                 submitHandler: function(form) {
                     let formData = new FormData(form);
                     let id = $('#vendor_id').val();
-                    let url = id ? `/vendors/${id}` : "{{ route('vendors.store') }}";
+                    let url = id ? `vendors/${id}` : "{{ route('vendors.store') }}";
 
                     if (id) formData.append('_method', 'PUT');
 
@@ -166,7 +166,7 @@
             // Edit vendor
             $(document).on('click', '.editBtn', function() {
                 let id = $(this).data('id');
-                $.get('/vendors/' + id + '/edit', function(data) {
+                $.get('vendors/' + id + '/edit', function(data) {
                     $('#vendor_id').val(data.id);
                     $('[name="vendor_name"]').val(data.vendor_name);
                     $('[name="vendor_country"]').val(data.vendor_country);
@@ -193,7 +193,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/vendors/' + id,
+                            url: 'vendors/' + id,
                             type: 'DELETE',
                             data: {
                                 _token: '{{ csrf_token() }}'
