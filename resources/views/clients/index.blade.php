@@ -219,7 +219,7 @@
         $(document).on('click', '.editBtn', function() {
             let id = $(this).data('id');
 
-            $.get('/clients/' + id + '/edit', function(data) {
+            $.get('clients/' + id + '/edit', function(data) {
                 $('#client_id').val(data.id);
                 $('[name="client_name"]').val(data.client_name);
                 $('[name="client_country"]').val(data.client_country);
@@ -247,7 +247,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/clients/' + id,
+                        url: 'clients/' + id,
                         type: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}'
