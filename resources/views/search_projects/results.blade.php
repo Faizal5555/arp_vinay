@@ -66,9 +66,12 @@
         text-align: center;
     }
 
-    .table td:nth-child(17) {
+    .table td:nth-child(2),
+    .table td:nth-child(17),
+    .table td:nth-child(18) {
         min-width: 140px;
     }
+
 
 
     /* Optional: Smaller responsive tweak */
