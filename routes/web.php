@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/current/projects', [App\Http\Controllers\CurrentProjectController::class, 'index'])->name('current_projects.index');
     Route::post('/current/projects/store', [App\Http\Controllers\CurrentProjectController::class, 'store'])->name('current_projects.store');
-    Route::post('/current-projects/delete-by-pn', [App\Http\Controllers\CurrentProjectController::class, 'deleteByPn']);
+    Route::post('/current-projects/delete-by-pn', [App\Http\Controllers\CurrentProjectController::class, 'deleteByPn'])->name('projects.deleteByPn');;
     Route::get('/current-projects/download', [App\Http\Controllers\CurrentProjectController::class, 'download'])->name('current_projects.download');
     Route::post('/pending-projects/store', [App\Http\Controllers\PendingProjectController::class, 'store'])->name('pending_projects.store');
     Route::get('/pending/projects', [App\Http\Controllers\PendingProjectController::class, 'index'])->name('pending.projects.index');

@@ -333,7 +333,7 @@
                             selectedProjectRow.remove();
                             $('#moveModal').modal('hide');
                             // ✅ Delete from current_projects DB
-                            fetch(`current-projects/delete-by-pn`, {
+                            fetch(`{{ route('projects.deleteByPn') }}`, {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector(
