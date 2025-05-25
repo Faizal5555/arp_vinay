@@ -134,10 +134,16 @@
                         <td>{{ $proj->pn_no }}</td>
                         <td>{{ $proj->email_subject }}</td>
                         <td>{{ \Carbon\Carbon::parse($proj->commission_date)->format('d-m-Y') }}</td>
-                        <td class="text-end">{{ number_format($proj->currency_amount, 2) }}</td>
-                        <td class="text-end">{{ number_format($proj->original_revenue, 2) }}</td>
-                        <td class="text-end">{{ number_format($proj->margin, 2) }}</td>
-                        <td class="text-end">{{ number_format($proj->final_invoice_amount, 2) }}</td>
+                        <td class="text-end">
+                            {{ number_format(is_numeric($proj->currency_amount) ? $proj->currency_amount : 0, 2) }}</td>
+                        <td class="text-end">
+                            {{ number_format(is_numeric($proj->original_revenue) ? $proj->original_revenue : 0, 2) }}
+                        </td>
+                        <td class="text-end">{{ number_format(is_numeric($proj->margin) ? $proj->margin : 0, 2) }}</td>
+                        <td class="text-end">
+                            {{ number_format(is_numeric($proj->final_invoice_amount) ? $proj->final_invoice_amount : 0, 2) }}
+                        </td>
+
                         <td>{{ $proj->comments }}</td>
                         <td>{{ $proj->supplier_name }}</td>
                         <td>{{ $proj->supplier_payment_details }}</td>

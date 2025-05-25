@@ -140,8 +140,7 @@
                             <div>
                                 <a href="{{ route('current_projects.sample') }}" class="btn btn-sm"
                                     style="background-color:#00326e; color:white;>
-                                <i class="bx
-                                    bx-download"></i> Download Sample XLSX
+                                <i class="bx bx-download"></i> Download Sample XLSX
                                 </a>
                             </div>
                         </div>
@@ -334,7 +333,7 @@
                             selectedProjectRow.remove();
                             $('#moveModal').modal('hide');
                             // ✅ Delete from current_projects DB
-                            fetch(`/current-projects/delete-by-pn`, {
+                            fetch(`current-projects/delete-by-pn`, {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector(
