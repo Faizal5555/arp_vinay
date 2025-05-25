@@ -99,7 +99,7 @@
                 </div>
 
                 <div class="gap-2 mb-3 d-grid">
-                    <button type="submit" class="btn upload-btn">Upload XLSX</button>
+                    <button type="submit" class="btn upload-btn" id="incentive_upload">Upload</button>
                 </div>
 
                 <div class="text-center">
@@ -134,7 +134,18 @@
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
+                    beforeSend: function() {
+                        // Disable the submit button and show the loader inside it
+                        $('#incentive_upload')
+                            .prop('disabled', true)
+                            .html(
+                                '<span class="spinner-border spinner-border-sm"></span> uploading...'
+                            );
+                    },
                     success: function() {
+                        $('#incentive_upload')
+                            .prop('disabled', false)
+                            .html('Submit');
                         Swal.fire({
                             icon: 'success',
                             title: 'Upload Complete!',

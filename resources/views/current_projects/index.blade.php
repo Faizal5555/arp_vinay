@@ -153,10 +153,10 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary"
-                        style="background-color:#00326e; color:white;>
+                    <button type="submit" class="btn btn-primary" style="background-color:#00326e; color:white;"
+                        id="project_upload">
                         <i class="bx bx-upload"></i>
-                        Upload & Save
+                        Upload
                     </button>
                 </div>
             </form>
@@ -369,7 +369,16 @@
                 headers: {
                     'X-CSRF-TOKEN': $('input[name="_token"]').val()
                 },
+                beforeSend: function() {
+                    // Disable the submit button and show the loader inside it
+                    $('#project_upload')
+                        .prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Uploading...');
+                },
                 success: function(response) {
+                    $('#project_upload')
+                        .prop('disabled', false)
+                        .html('Submit');
                     $('#uploadModal').modal('hide');
                     Swal.fire('Success', response.message, 'success').then(() => location.reload());
                 },
