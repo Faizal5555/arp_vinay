@@ -160,6 +160,9 @@
                         $('#fileName').text('No file chosen');
                     },
                     error: function(xhr) {
+                        $('#incentive_upload')
+                            .prop('disabled', false)
+                            .html('upload');
                         let msg = 'Upload failed. Please check your file.';
                         if (xhr.responseJSON?.errors) {
                             msg = Object.values(xhr.responseJSON.errors).flat().join('\n');

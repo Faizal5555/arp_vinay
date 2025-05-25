@@ -11,6 +11,7 @@ use App\Exports\CurrentProjectsExport;
 use App\Exports\CurrentProjectSampleExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CurrentProjectImport;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class CurrentProjectController extends Controller
 {
@@ -144,14 +145,56 @@ class CurrentProjectController extends Controller
         return Excel::download(new CurrentProjectSampleExport, 'sample_current_projects.xlsx');
     }
 
-    public function bulkUpload(Request $request)
+//     public function bulkUpload(Request $request)
+// {
+//     $request->validate([
+//         'bulk_file' => 'required|file|mimes:xlsx'
+//     ]);
+
+//     Excel::import(new CurrentProjectImport, $request->file('bulk_file'));
+
+//     return response()->json(['success' => true, 'message' => 'Projects imported successfully.']);
+// }
+
+
+public function bulkUpload(Request $request)
 {
     $request->validate([
         'bulk_file' => 'required|file|mimes:xlsx'
     ]);
 
-    Excel::import(new CurrentProjectImport, $request->file('bulk_file'));
+    try {
+        $file = $request->file('bulk_file');
+        $spreadsheet = IOFactory::load($file);
+        $sheet = $spreadsheet->getActiveSheet();
 
-    return response()->json(['success' => true, 'message' => 'Projects imported successfully.']);
+        // Get the first row as headers
+        $headers = $sheet->rangeToArray('A1:' . $sheet->getHighestColumn() . '1')[0];
+
+        // Define the expected column headers (customize this based on your actual format)
+        $expectedHeaders = ['pn_no', 'client_id', 'company_name', 'fy'];
+
+        foreach ($expectedHeaders as $header) {
+            if (!in_array($header, $headers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Invalid file format. Missing column: {$header}"
+                ]);
+            }
+        }
+
+        // If headers match, proceed with the import
+        Excel::import(new CurrentProjectImport, $file);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Projects imported successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'File processing error: ' . $e->getMessage()
+        ]);
+    }
 }
 }

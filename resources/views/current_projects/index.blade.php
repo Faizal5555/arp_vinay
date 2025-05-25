@@ -358,6 +358,14 @@
         $('#bulkUploadForm').on('submit', function(e) {
             e.preventDefault();
 
+            const fileInput = this.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
+
+            if (!file || !file.name.endsWith('.xlsx')) {
+                Swal.fire('Invalid File', 'Please upload a valid .xlsx file.', 'error');
+                return;
+            }
+
             const formData = new FormData(this);
 
             $.ajax({
@@ -370,7 +378,6 @@
                     'X-CSRF-TOKEN': $('input[name="_token"]').val()
                 },
                 beforeSend: function() {
-                    // Disable the submit button and show the loader inside it
                     $('#project_upload')
                         .prop('disabled', true)
                         .html('<span class="spinner-border spinner-border-sm"></span> Uploading...');
@@ -378,11 +385,22 @@
                 success: function(response) {
                     $('#project_upload')
                         .prop('disabled', false)
-                        .html('Submit');
+                        .html('Upload');
+
                     $('#uploadModal').modal('hide');
-                    Swal.fire('Success', response.message, 'success').then(() => location.reload());
+
+                    if (response.success) {
+                        Swal.fire('Success', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message || 'Upload failed.', 'error');
+                    }
                 },
                 error: function(xhr) {
+                    $('#project_upload')
+                        .prop('disabled', false)
+                        .html('Upload');
+
+                    $('#uploadModal').modal('hide');
                     let msg = 'Upload failed.';
                     if (xhr.responseJSON?.errors) {
                         msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
