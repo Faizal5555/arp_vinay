@@ -155,7 +155,7 @@
                     let clientId = $('#client_id').val();
 
                     // If client_id exists, it's an update. Otherwise, it's create.
-                    let url = clientId ? `/clients/${clientId}` : "{{ route('clients.store') }}";
+                    let url = clientId ? `clients/${clientId}` : "{{ route('clients.store') }}";
                     let method = clientId ? 'POST' : 'POST';
 
                     // Simulate PUT for update
