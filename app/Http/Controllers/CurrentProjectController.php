@@ -172,7 +172,7 @@ public function bulkUpload(Request $request)
         $headers = $sheet->rangeToArray('A1:' . $sheet->getHighestColumn() . '1')[0];
 
         // Define the expected column headers (customize this based on your actual format)
-        $expectedHeaders = ['pn_no', 'client_id', 'company_name', 'fy'];
+        $expectedHeaders = ['pn_no', 'client_id', 'company_name', 'fy','quartar','currency_amount'];
 
         foreach ($expectedHeaders as $header) {
             if (!in_array($header, $headers)) {

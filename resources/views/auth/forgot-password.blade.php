@@ -1,25 +1,74 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+@extends('layouts.app')
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@section('content')
+    <style>
+        body {
+            background: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        .auth-card {
+            width: 100%;
+            max-width: 480px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-height: 80px;
+        }
+
+        .form-title {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #00326e;
+        }
+    </style>
+    </head>
+
+    <body>
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <img src="{{ asset('assets/img/avatars/logo-4.png') }}" alt="Logo" class="logo">
+
+                <h2 class="form-title">Forgot Password</h2>
+
+                @if (session('status'))
+                    <div class="text-center alert alert-success">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('password.email') }}">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Enter your email address</label>
+                        <input type="email" name="email" id="email"
+                            class="form-control @error('email') is-invalid @enderror" required autofocus>
+
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    @endsection
