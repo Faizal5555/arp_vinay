@@ -286,6 +286,8 @@
             if (incentiveEl) incentiveEl.textContent = incentive.toFixed(2);
         }
 
+
+        const baseUpdateUrl = `{{ url('pending-projects/update-status') }}`;
         document.querySelectorAll('.updateStatusBtn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
@@ -301,7 +303,7 @@
                 }
 
 
-                fetch(`pending-projects/update-status/${id}`, {
+                fetch(`${baseUpdateUrl}/${id}`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
