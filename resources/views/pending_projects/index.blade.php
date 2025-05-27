@@ -62,10 +62,37 @@
                                         value="{{ isset($project->entry_date) && $project->entry_date ? \Carbon\Carbon::parse($project->entry_date)->format('Y-m-d') : '-' }}"
                                         readonly>
                                 </td>
-                                <td><input type="text" name="fy[]" class="form-control" value="{{ $project->fy }}">
+                                <td>
+                                    <select name="fy[]" class="form-select">
+                                        <option value="">-- Select FY --</option>
+                                        @for ($i = 10; $i <= 50; $i++)
+                                            @php
+                                                $fy =
+                                                    'FY ' .
+                                                    str_pad($i, 2, '0', STR_PAD_LEFT) .
+                                                    '-' .
+                                                    str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
+                                            @endphp
+                                            <option value="{{ $fy }}"
+                                                {{ isset($project) && $project->fy == $fy ? 'selected' : '' }}>
+                                                {{ $fy }}
+                                            </option>
+                                        @endfor
+                                    </select>
                                 </td>
-                                <td><input type="text" name="quarter[]" class="form-control"
-                                        value="{{ $project->quarter }}"></td>
+
+                                <td>
+                                    <select name="quarter[]" class="form-select">
+                                        <option value="">-- Select Quarter --</option>
+                                        @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
+                                            <option value="{{ $q }}"
+                                                {{ isset($project) && $project->quarter == $q ? 'selected' : '' }}>
+                                                {{ $q }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </td>
+
                                 <td>
                                     <select name="client_id[]" class="form-select">
                                         @foreach ($clients as $client)

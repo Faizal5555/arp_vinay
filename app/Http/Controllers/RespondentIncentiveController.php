@@ -6,26 +6,44 @@ use App\Models\RespondentIncentive;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RespondentIncentiveExport;
+use App\Models\Country;
+use Illuminate\Support\Facades\DB;
 
 class RespondentIncentiveController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        //
-        $query = RespondentIncentive::query();
+   public function index(Request $request)
+{
+    $query = RespondentIncentive::query();
 
-        if ($request->filled('date_range')) {
-            [$start, $end] = explode(' to ', $request->date_range);
-            $query->whereBetween('date', [$start, $end]);
-        }
-    
-        $records = $query->latest()->get();
-        return view('respondent_incentives.index', compact('records'));
+    if ($request->filled('date_range')) {
+        [$start, $end] = explode(' to ', $request->date_range);
+        $query->whereBetween('date', [$start, $end]);
     }
 
+    if ($request->filled('country_id')) {
+        $query->where('country_id', $request->country_id);
+    }
+
+    if ($request->filled('speciality')) {
+        $query->where('speciality', $request->speciality);
+    }
+
+    $records = $query->latest()->get();
+
+    // Load countries for filter
+    $countries = Country::orderBy('name')->get();
+
+    // Load unique specialities from existing data
+    $specialities = RespondentIncentive::select('speciality')
+        ->distinct()
+        ->orderBy('speciality')
+        ->pluck('speciality');
+
+    return view('respondent_incentives.index', compact('records', 'countries', 'specialities'));
+}
     /**
      * Show the form for creating a new resource.
      */
@@ -54,6 +72,7 @@ class RespondentIncentiveController extends Controller
             'end_date' => 'required|date',
             'payment_date' => 'required|date',
             'payment_type' => 'required|string|in:Cash,PayPal,GiftVoucher,BankTransfer,Check,Credit,Wise,Others',
+            'country_id' => 'required|exists:country,id', 
         ]);
 
         $data = $request->all();
@@ -113,7 +132,9 @@ class RespondentIncentiveController extends Controller
 
     public function download(Request $request)
 {   
-    $dateRange = $request->input('date_range'); 
-    return Excel::download(new RespondentIncentiveExport(  $dateRange ), 'respondent_incentives.xlsx');
+     return Excel::download(
+        new RespondentIncentiveExport($request->only(['date_range', 'country_id', 'speciality'])),
+        'respondent_incentives.xlsx'
+    );
 }
 }

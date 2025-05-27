@@ -9,16 +9,45 @@
         </div>
 
         <form method="GET" action="{{ route('respondent.index') }}" class="mb-4 row g-3 align-items-center">
-            <div class="col-md-4">
+
+            <div class="col-md-3">
+                <label for="country_id" class="form-label">Country</label>
+                <select name="country_id" id="country_id" class="form-select">
+                    <option value="">All Countries</option>
+                    @foreach ($countries as $country)
+                        <option value="{{ $country->id }}" {{ request('country_id') == $country->id ? 'selected' : '' }}>
+                            {{ $country->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="speciality" class="form-label">Speciality</label>
+                <select name="speciality" id="speciality" class="form-select">
+                    <option value="">All Specialities</option>
+                    @foreach ($specialities as $sp)
+                        <option value="{{ $sp }}" {{ request('speciality') == $sp ? 'selected' : '' }}>
+                            {{ $sp }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
                 <label for="date_range" class="form-label">Date Range</label>
                 <input type="text" name="date_range" id="date_range" class="form-control" placeholder="Select date range"
                     value="{{ request('date_range') }}">
             </div>
+
             <div class="pt-4 col-md-2">
-                <button class="btn btn-primary" type="submit"
-                    style="background-color:#00326e; color:white;">Filter</button>
+                <button class="mt-2 btn btn-primary" type="submit" style="background-color:#00326e; color:white;">
+                    Filter
+                </button>
             </div>
+
         </form>
+
 
         <div class="gap-2 d-flex justify-content-end">
             <form id="downloadForm" method="GET" action="{{ route('respondent.download') }}"
@@ -47,11 +76,12 @@
                         <th>Email ID</th>
                         <th>Contact Number</th>
                         <th>Speciality</th>
+                        <th>Country</th>
                         <th>Incentive Amount</th>
-                        <th>Incentive Form</th>
+                        <th>Payment Currency</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>Payment Data</th>
+                        <th>Payment Date</th>
                         <th>Payment Type</th>
                         <th>Actions</th>
                     </tr>
@@ -65,6 +95,7 @@
                             <td>{{ $r->email_id }}</td>
                             <td>{{ $r->contact_number }}</td>
                             <td>{{ $r->speciality }}</td>
+                            <td>{{ $r->country ? $r->country->name : '-' }}</td>
                             <td>{{ $r->incentive_amount }}</td>
                             <td>{{ $r->incentive_form }}</td>
                             <td>{{ $r->start_date }}</td>
@@ -79,8 +110,8 @@
                                     data-incentive_amount="{{ $r->incentive_amount }}"
                                     data-incentive_form="{{ $r->incentive_form }}" data-start_date="{{ $r->start_date }}"
                                     data-end_date="{{ $r->end_date }}" data-payment_date="{{ $r->payment_date }}"
-                                    data-payment_type="{{ $r->payment_type }}" data-bs-toggle="modal"
-                                    data-bs-target="#addModal">
+                                    data-payment_type="{{ $r->payment_type }}" data-country_id="{{ $r->country_id }}"
+                                    data-bs-toggle="modal" data-bs-target="#addModal">
                                     Edit
                                 </button>
                                 <button class="btn btn-danger btn-sm deleteBtn"
@@ -118,8 +149,8 @@
 
                         <div class="col-md-6">
                             <label for="pn_no" class="form-label">PN No</label>
-                            <input type="text" name="pn_no" id="pn_no" class="form-control" placeholder="PN No"
-                                required>
+                            <input type="text" name="pn_no" id="pn_no" class="form-control"
+                                placeholder="PN No" required>
                         </div>
 
                         <div class="col-md-6">
@@ -145,6 +176,15 @@
                             <input type="text" name="speciality" id="speciality" class="form-control"
                                 placeholder="Speciality" required>
                         </div>
+                        <div class="col-md-6">
+                            <label for="country_id" class="form-label">Country</label>
+                            <select name="country_id" id="country_id" class="form-select" required>
+                                <option value="">Select Country</option>
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country->id }}">{{ $country->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="col-md-6">
                             <label for="incentive_amount" class="form-label">Incentive Amount</label>
@@ -153,9 +193,9 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="incentive_form" class="form-label">Incentive Form</label>
+                            <label for="incentive_form" class="form-label">Payment Currency</label>
                             <input type="text" name="incentive_form" id="incentive_form" class="form-control"
-                                placeholder="Incentive Form" required>
+                                placeholder="Payment Currency" required>
                         </div>
 
                         <div class="col-md-6">
@@ -360,7 +400,8 @@
                 modal.find('[name="start_date"]').val($(this).data('start_date'));
                 modal.find('[name="end_date"]').val($(this).data('end_date'));
                 modal.find('[name="payment_date"]').val($(this).data('payment_date'));
-                modal.find('[name="payment_type"]').val($(this).data('payment_type'));
+                modal.find('[name="payment_type"]').val($(this).data('payment_type')).trigger('change');
+                modal.find('[name="country_id"]').val($(this).data('country_id')).trigger('change'); // 
             });
 
             // Delete with confirmation

@@ -13,6 +13,13 @@ class RespondentIncentive extends Model
         'date','pn_no', 'respondent_name', 'email_id', 'contact_number',
         'speciality', 'incentive_amount', 'incentive_form',
         'start_date', 'end_date', 'payment_date',
-        'payment_type'
+        'payment_type','country_id'
     ];
+
+    // App\Models\RespondentIncentive.php
+  public function country()
+{
+    return $this->belongsTo(Country::class, 'country_id', 'id');
+}
+
 }

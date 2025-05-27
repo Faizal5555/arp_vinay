@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use DB;
+use Illuminate\Support\Facades\DB;
 use App\Models\Client;
 
 
@@ -23,7 +23,8 @@ class DashboardController extends Controller
         }
     
         $fy = $fy ? trim($fy) : null;
-        $quarter = $quarter ? strtoupper(trim($quarter)) : null;
+        $quarter = trim($quarter);
+        $quarter = $quarter === '' ? null : strtoupper($quarter);
     
         $fyFrom = $request->fy_from;
         $fyTo = $request->fy_to;
@@ -48,15 +49,17 @@ class DashboardController extends Controller
     
         // Build FY range list (e.g., 2023-24 to 2025-26)
         $fyRange = collect();
-        if ($multiYearMode) {
-            $fyStartYear = (int) substr($fyFrom, 0, 4);
-            $fyEndYear = (int) substr($fyTo, 0, 4);
-    
-            for ($y = $fyStartYear; $y <= $fyEndYear; $y++) {
-                $fyLabel = $y . '-' . substr($y + 1, 2);
-                $fyRange->push($fyLabel);
-            }
+       if ($multiYearMode) {
+    // Fix: Extract numeric start years correctly from "FY 24-25"
+        $fyStartYear = (int) ('20' . substr(preg_replace('/[^0-9]/', '', $fyFrom), 0, 2));
+        $fyEndYear = (int) ('20' . substr(preg_replace('/[^0-9]/', '', $fyTo), 0, 2));
+
+        for ($y = $fyStartYear; $y <= $fyEndYear; $y++) {
+            $fyLabel = 'FY ' . substr($y, 2, 2) . '-' . substr($y + 1, 2, 2);
+            $fyRange->push($fyLabel);
         }
+    }
+
     
         // Project counts
         $projectQuery = DB::table('current_projects')

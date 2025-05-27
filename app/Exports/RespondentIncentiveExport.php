@@ -10,40 +10,59 @@ use Illuminate\Support\Collection;
 class RespondentIncentiveExport implements FromCollection, WithHeadings
 {
     protected $range;
+    protected $countryId;
+    protected $speciality;
 
-    public function __construct($dateRange = null)
+    public function __construct($filters = [])
     {
-        $this->range = $dateRange;
+        $this->range = $filters['date_range'] ?? null;
+        $this->countryId = $filters['country_id'] ?? null;
+        $this->speciality = $filters['speciality'] ?? null;
     }
 
     public function collection()
     {
-        $query = RespondentIncentive::query();
-    
+        $query = RespondentIncentive::with('country:id,name') // eager load country name
+            ->select([
+                'id', // required for relation to work
+                'date', 'pn_no', 'respondent_name', 'email_id', 'contact_number',
+                'country_id', 'speciality', 'incentive_amount', 'incentive_form',
+                'start_date', 'end_date', 'payment_date', 'payment_type'
+            ]);
+
         if ($this->range) {
             $parts = explode(' to ', $this->range);
             if (count($parts) === 2) {
-                $start = $parts[0];
-                $end = $parts[1];
-                $query->whereBetween('date', [$start, $end]);
+                $query->whereBetween('date', [$parts[0], $parts[1]]);
             }
         }
-    
-        return $query->select([
-            'date',
-            'pn_no',
-            'respondent_name',
-            'email_id',
-            'contact_number',
-            'speciality',
-            'incentive_amount',
-            'incentive_form',
-            'start_date',
-            'end_date',
-            'payment_date', 'payment_type'
-        ])->get();
+
+        if ($this->countryId) {
+            $query->where('country_id', $this->countryId);
+        }
+
+        if ($this->speciality) {
+            $query->where('speciality', $this->speciality);
+        }
+
+        return $query->get()->map(function ($item) {
+            return [
+                $item->date,
+                $item->pn_no,
+                $item->respondent_name,
+                $item->email_id,
+                $item->contact_number,
+                optional($item->country)->name ?? '-', // show country name
+                $item->speciality,
+                $item->incentive_amount,
+                $item->incentive_form,
+                $item->start_date,
+                $item->end_date,
+                $item->payment_date,
+                $item->payment_type
+            ];
+        });
     }
-    
 
     public function headings(): array
     {
@@ -53,14 +72,14 @@ class RespondentIncentiveExport implements FromCollection, WithHeadings
             'Respondent Name',
             'Email ID',
             'Contact Number',
+            'Country',
             'Speciality',
             'Incentive Amount',
-            'Incentive Form',
+            'Payment Currency',
             'Start Date',
             'End Date',
-             'Payment Date',
+            'Payment Date',
             'Payment Type'
         ];
     }
-    
 }

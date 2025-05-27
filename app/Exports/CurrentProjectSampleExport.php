@@ -2,12 +2,12 @@
 
 namespace App\Exports;
 
+use App\Models\Client;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
-use App\Models\Client;
 
 class CurrentProjectSampleExport implements FromArray, WithHeadings, WithEvents
 {
@@ -23,9 +23,9 @@ class CurrentProjectSampleExport implements FromArray, WithHeadings, WithEvents
         return [
             [
                 now()->format('Y-m-d'), // entry_date
-                '2024-25',
+                'FY 24-25',
                 'Q1',
-                $this->clients[0] ?? 'Client A', // Use client name, not ID
+                $this->clients[0] ?? 'Client A',
                 'ARP',
                 'PN12345',
                 'Research Subject',
@@ -75,60 +75,82 @@ class CurrentProjectSampleExport implements FromArray, WithHeadings, WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-    
+
                 // Format date columns
                 foreach (['A', 'H', 'Q', 'R'] as $col) {
                     for ($i = 2; $i <= 100; $i++) {
                         $sheet->getStyle("$col$i")->getNumberFormat()->setFormatCode('yyyy-mm-dd');
                     }
                 }
-    
-                // Invoice Status dropdown – column S
-                $statusValidation = $sheet->getCell('S2')->getDataValidation();
-                $statusValidation->setType(DataValidation::TYPE_LIST)
-                    ->setErrorStyle(DataValidation::STYLE_STOP)
-                    ->setAllowBlank(true)
-                    ->setShowInputMessage(true)
-                    ->setShowErrorMessage(true)
-                    ->setShowDropDown(true)
-                    ->setFormula1('"Pending,Paid,Canceled"');
-    
-                for ($i = 2; $i <= 100; $i++) {
-                    $sheet->getCell("S$i")->setDataValidation(clone $statusValidation);
+
+                // FY dropdown (Column B)
+                $fyOptions = [];
+                for ($i = 10; $i <= 50; $i++) {
+                    $fyOptions[] = 'FY ' . str_pad($i, 2, '0', STR_PAD_LEFT) . '-' . str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
                 }
-    
-                // Client Name dropdown – column D (client_id)
+                $fyList = '"' . implode(',', $fyOptions) . '"';
+                $fyValidation = new DataValidation();
+                $fyValidation->setType(DataValidation::TYPE_LIST)
+                    ->setErrorStyle(DataValidation::STYLE_STOP)
+                    ->setAllowBlank(false)
+                    ->setShowDropDown(true)
+                    ->setFormula1($fyList);
+
+                for ($i = 2; $i <= 100; $i++) {
+                    $sheet->getCell("B$i")->setDataValidation(clone $fyValidation);
+                }
+
+                // Quarter dropdown (Column C)
+                $quarters = '"Q1,Q2,Q3,Q4"';
+                $quarterValidation = new DataValidation();
+                $quarterValidation->setType(DataValidation::TYPE_LIST)
+                    ->setErrorStyle(DataValidation::STYLE_STOP)
+                    ->setAllowBlank(false)
+                    ->setShowDropDown(true)
+                    ->setFormula1($quarters);
+
+                for ($i = 2; $i <= 100; $i++) {
+                    $sheet->getCell("C$i")->setDataValidation(clone $quarterValidation);
+                }
+
+                // Client dropdown (Column D)
                 $clientNames = array_map('trim', $this->clients);
                 $clientList = '"' . implode(',', array_slice($clientNames, 0, 255)) . '"';
-    
                 $clientValidation = new DataValidation();
                 $clientValidation->setType(DataValidation::TYPE_LIST)
                     ->setErrorStyle(DataValidation::STYLE_STOP)
                     ->setAllowBlank(false)
-                    ->setShowInputMessage(true)
-                    ->setShowErrorMessage(true)
                     ->setShowDropDown(true)
                     ->setFormula1($clientList);
-    
+
                 for ($i = 2; $i <= 100; $i++) {
                     $sheet->getCell("D$i")->setDataValidation(clone $clientValidation);
                 }
-    
-                // Company Name dropdown – column E
+
+                // Company dropdown (Column E)
                 $companies = ['ARP', 'HPI', 'URP'];
                 $companyList = '"' . implode(',', $companies) . '"';
-    
                 $companyValidation = new DataValidation();
                 $companyValidation->setType(DataValidation::TYPE_LIST)
                     ->setErrorStyle(DataValidation::STYLE_STOP)
                     ->setAllowBlank(false)
-                    ->setShowInputMessage(true)
-                    ->setShowErrorMessage(true)
                     ->setShowDropDown(true)
                     ->setFormula1($companyList);
-    
+
                 for ($i = 2; $i <= 100; $i++) {
                     $sheet->getCell("E$i")->setDataValidation(clone $companyValidation);
+                }
+
+                // Invoice Status dropdown – Column S
+                $statusValidation = new DataValidation();
+                $statusValidation->setType(DataValidation::TYPE_LIST)
+                    ->setErrorStyle(DataValidation::STYLE_STOP)
+                    ->setAllowBlank(true)
+                    ->setShowDropDown(true)
+                    ->setFormula1('"Pending,Paid,Canceled"');
+
+                for ($i = 2; $i <= 100; $i++) {
+                    $sheet->getCell("S$i")->setDataValidation(clone $statusValidation);
                 }
             }
         ];

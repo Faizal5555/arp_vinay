@@ -13,12 +13,31 @@
                 <form id="filterForm" class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label>FY</label>
-                        <input type="text" name="fy" class="form-control">
+                        <select name="fy" class="form-select">
+                            <option value="">-- Select FY --</option>
+                            @for ($i = 10; $i <= 50; $i++)
+                                @php
+                                    $fy =
+                                        'FY ' .
+                                        str_pad($i, 2, '0', STR_PAD_LEFT) .
+                                        '-' .
+                                        str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
+                                @endphp
+                                <option value="{{ $fy }}">{{ $fy }}</option>
+                            @endfor
+                        </select>
                     </div>
+
                     <div class="col-md-3">
-                        <label>FY/Quarter</label>
-                        <input type="text" name="quarter" class="form-control">
+                        <label>Quarter</label>
+                        <select name="quarter" class="form-select">
+                            <option value="">-- Select Quarter --</option>
+                            @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
+                                <option value="{{ $q }}">{{ $q }}</option>
+                            @endforeach
+                        </select>
                     </div>
+
                     <div class="col-md-3">
                         <label>Client</label>
                         <select name="client_id" class="form-select">

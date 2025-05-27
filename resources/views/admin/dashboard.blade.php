@@ -95,23 +95,64 @@
         <form method="GET" action="{{ route('dashboard') }}" class="mb-4 row g-3 align-items-end">
             <div class="col-md-2">
                 <label class="form-label fw-semibold">FY</label>
-                <input type="text" name="fy" value="{{ request('fy') }}" class="form-control"
-                    placeholder="e.g. 2025-26">
+                <select name="fy" class="form-select">
+                    <option value="">-- Select FY --</option>
+                    @for ($i = 10; $i <= 50; $i++)
+                        @php
+                            $fyLabel = 'FY ' . $i . '-' . sprintf('%02d', $i + 1);
+                        @endphp
+                        <option value="{{ $fyLabel }}" {{ request('fy') == $fyLabel ? 'selected' : '' }}>
+                            {{ $fyLabel }}
+                        </option>
+                    @endfor
+
+                </select>
+
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold">FY & Quarter</label>
-                <input type="text" name="quarter" value="{{ request('quarter') }}" class="form-control"
-                    placeholder="e.g. 2025-26 & Q1">
+                <select name="quarter" class="form-select">
+                    <option value="">-- Select FY & Quarter --</option>
+                    @for ($i = 10; $i <= 50; $i++)
+                        @php
+                            $fy = 'FY ' . $i . '-' . sprintf('%02d', $i + 1);
+                        @endphp
+                        @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
+                            @php
+                                $combined = $fy . ' & ' . $q;
+                            @endphp
+                            <option value="{{ $combined }}" {{ request('quarter') == $combined ? 'selected' : '' }}>
+                                {{ $combined }}
+                            </option>
+                        @endforeach
+                    @endfor
+                </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-semibold">From FY</label>
-                <input type="text" name="fy_from" value="{{ request('fy_from') }}" class="form-control"
-                    placeholder="e.g. 2023-24">
+                <select name="fy_from" class="form-select">
+                    <option value="">-- From FY --</option>
+                    @for ($i = 10; $i <= 50; $i++)
+                        @php
+                            $fyLabel = 'FY ' . $i . '-' . sprintf('%02d', $i + 1);
+                        @endphp
+                        <option value="{{ $fyLabel }}" {{ request('fy') == $fyLabel ? 'selected' : '' }}>
+                            {{ $fyLabel }}
+                        </option>
+                    @endfor
+
+                </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-semibold">To FY</label>
-                <input type="text" name="fy_to" value="{{ request('fy_to') }}" class="form-control"
-                    placeholder="e.g. 2025-26">
+                <select name="fy_to" class="form-select">
+                    <option value="">-- To FY --</option>
+                    @for ($i = 10; $i <= 50; $i++)
+                        @php $fy = 'FY ' . $i . '-' . sprintf('%02d', $i + 1); @endphp
+                        <option value="{{ $fy }}" {{ request('fy_to') == $fy ? 'selected' : '' }}>
+                            {{ $fy }}</option>
+                    @endfor
+                </select>
             </div>
             <div class="col-md-3 d-grid">
                 <button type="submit" class="btn btn-success"><i class="bx bx-search"></i> Filter Projects</button>
@@ -173,7 +214,7 @@
         @if ($fullYearMode)
             {{-- SHOW Q1 to Q4 breakdown + chart only when quarter is NOT filtered --}}
             <div class="mt-5">
-                <h4 class="mb-3 fw-bold">FY {{ $fy }} Quarter-wise Summary</h4>
+                <h4 class="mb-3 fw-bold">{{ request('fy') }} Quarter-wise Summary</h4>
                 <div class="table-responsive">
                     <table class="table text-center align-middle table-bordered table-striped">
                         <thead style="background-color: #00326e; color:white;">
@@ -201,24 +242,24 @@
             </div>
             <div class="row">
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold">FY {{ $fy }} - Revenue (Quarter-wise)</h5>
+                    <h5 class="fw-bold">{{ request('fy') }} - Revenue (Quarter-wise)</h5>
                     <canvas id="fyRevenueChart" height="220"></canvas>
                 </div>
 
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold">FY {{ $fy }} - Margin (Quarter-wise)</h5>
+                    <h5 class="fw-bold">{{ request('fy') }} - Margin (Quarter-wise)</h5>
                     <canvas id="fyMarginChart" height="220"></canvas>
                 </div>
 
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold">FY {{ $fy }} - Invoice (Quarter-wise)</h5>
+                    <h5 class="fw-bold"> {{ request('fy') }} - Invoice (Quarter-wise)</h5>
                     <canvas id="fyInvoiceChart" height="220"></canvas>
                 </div>
             </div>
         @elseif($fy && $quarter)
             {{-- SHOW only selected quarter metrics --}}
             <div class="mt-5">
-                <h4 class="mb-3 fw-bold">FY {{ $fy }} - {{ $quarter }} Summary</h4>
+                <h4 class="mb-3 fw-bold">{{ request('fy') }} {{ request('quarter') }} Summary</h4>
                 <div class="table-responsive">
                     <table class="table text-center align-middle table-bordered table-striped">
                         <thead style="background-color: #00326e; color:white !important;">
@@ -242,7 +283,7 @@
             </div>
             @if ($fy && $quarter)
                 <div class="mt-4">
-                    <h5 class="fw-bold">FY {{ $fy }} - {{ $quarter }} Chart</h5>
+                    <h5 class="fw-bold">{{ request('fy') }} {{ request('quarter') }} Chart</h5>
                     <canvas id="quarterChart" height="120"></canvas>
                 </div>
             @endif
@@ -281,19 +322,19 @@
         @endif
 
         @if ($multiYearMode && $multiYearData->isNotEmpty())
-            <div class="row">
-                <div class="mt-4 col-md-4">
-                    <h4 class="mb-4 fw-bold">Year-wise Comparison - Revenue</h4>
+            <div class="mt-4 row">
+                <div class="col-md-4">
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Revenue</h4>
                     <canvas id="revenueChart" height="300"></canvas>
                 </div>
 
                 <div class="mt-4 col-md-4">
-                    <h4 class="mb-4 fw-bold">Year-wise Comparison - Margin</h4>
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Margin</h4>
                     <canvas id="marginChart" height="300"></canvas>
                 </div>
 
                 <div class="mt-4 col-md-4">
-                    <h4 class="mb-4 fw-bold">Year-wise Comparison - Invoice</h4>
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Invoice</h4>
                     <canvas id="invoiceChart" height="300"></canvas>
                 </div>
             </div>
@@ -307,25 +348,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         @if ($fullYearMode)
-            const ctx = document.getElementById('fyBarChart').getContext('2d');
             const labels = {!! json_encode($quarterWiseData->keys()) !!};
-            // const currency = {!! json_encode($quarterWiseData->pluck('Currency')->values()) !!};
-            const revenue = {!! json_encode($quarterWiseData->pluck('Revenue')->values()) !!};
-            const margin = {!! json_encode($quarterWiseData->pluck('Margin')->values()) !!};
-            const invoice = {!! json_encode($quarterWiseData->pluck('Invoice')->values()) !!};
 
-            new Chart(ctx, {
+            const revenue = {!! json_encode($quarterWiseData->pluck('Revenue')->map(fn($v) => (float) $v)->values()) !!};
+            const margin = {!! json_encode($quarterWiseData->pluck('Margin')->map(fn($v) => (float) $v)->values()) !!};
+            const invoice = {!! json_encode($quarterWiseData->pluck('Invoice')->map(fn($v) => (float) $v)->values()) !!};
+
+            const yAxisOptions = {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        // Use Number() to ensure it's numeric and avoid NaN
+                        return '{{ $currencySymbol ?? "$" }}' + Number(value).toLocaleString();
+                    }
+                }
+            };
+
+            new Chart(document.getElementById('fyBarChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [
-                        // {
-                        //     label: 'Total Currency',
-                        //     data: currency,
-                        //     backgroundColor: '#007bff'
-                        //     hidden: true
-                        // },
-                        {
+                    datasets: [{
                             label: 'Original Revenue',
                             data: revenue,
                             backgroundColor: '#28a745'
@@ -351,34 +394,20 @@
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return +value.toLocaleString();
-                                }
-                            }
-                        }
+                        y: yAxisOptions
                     }
                 }
             });
-        @endif
-
-        @if ($fullYearMode)
-            const quarterLabels = {!! json_encode($quarterWiseData->keys()) !!};
-            const fyRevenueData = {!! json_encode($quarterWiseData->pluck('Revenue')->values()) !!};
-            const fyMarginData = {!! json_encode($quarterWiseData->pluck('Margin')->values()) !!};
-            const fyInvoiceData = {!! json_encode($quarterWiseData->pluck('Invoice')->values()) !!};
 
             const buildSingleMetricChart = (canvasId, title, data, color) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: quarterLabels,
+                        labels: labels,
                         datasets: [{
                             label: title,
-                            data: data,
+                            data: data.map(Number), // Ensure conversion to numbers
                             backgroundColor: color,
                             barThickness: 40
                         }]
@@ -392,51 +421,40 @@
                             }
                         },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return '{{ $currencySymbol ?? "$" }}' + value.toLocaleString();
-                                    }
-                                }
-                            }
+                            y: yAxisOptions
                         }
                     }
                 });
             };
 
-            buildSingleMetricChart('fyRevenueChart', 'Revenue', fyRevenueData, '#28a745');
-            buildSingleMetricChart('fyMarginChart', 'Margin', fyMarginData, '#ffc107');
-            buildSingleMetricChart('fyInvoiceChart', 'Invoice', fyInvoiceData, '#dc3545');
+            buildSingleMetricChart('fyRevenueChart', 'Revenue', revenue, '#28a745');
+            buildSingleMetricChart('fyMarginChart', 'Margin', margin, '#ffc107');
+            buildSingleMetricChart('fyInvoiceChart', 'Invoice', invoice, '#dc3545');
         @endif
     </script>
+
     <script>
         @if ($fy && $quarter)
-            const ctx = document.getElementById('quarterChart').getContext('2d');
-
-            new Chart(ctx, {
+            new Chart(document.getElementById('quarterChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['Original Revenue', 'Margin', 'Total Invoice'],
                     datasets: [{
                         label: 'Amount in {{ $currencySymbol ?? 'USD' }}',
                         data: [
-                            // {{ $currencyTotal }},
-                            {{ $originalRevenueTotal }},
-                            {{ $marginTotal }},
-                            {{ $invoiceAmountTotal }}
+                            {{ (float) $originalRevenueTotal }},
+                            {{ (float) $marginTotal }},
+                            {{ (float) $invoiceAmountTotal }}
                         ],
                         backgroundColor: [
                             'rgba(0, 50, 110, 0.8)',
                             'rgba(0, 100, 200, 0.8)',
-                            'rgba(0, 150, 136, 0.8)',
-                            'rgba(255, 99, 132, 0.8)'
+                            'rgba(0, 150, 136, 0.8)'
                         ],
                         borderColor: [
                             'rgba(0, 50, 110, 1)',
                             'rgba(0, 100, 200, 1)',
-                            'rgba(0, 150, 136, 1)',
-                            'rgba(255, 99, 132, 1)'
+                            'rgba(0, 150, 136, 1)'
                         ],
                         borderWidth: 1,
                         barThickness: 70
@@ -449,7 +467,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '{{ $currencySymbol ?? "$" }}' + value.toLocaleString();
+                                    return '{{ $currencySymbol ?? "$" }}' + Number(value).toLocaleString();
                                 }
                             }
                         }
@@ -458,6 +476,7 @@
             });
         @endif
     </script>
+
 
     <script>
         @if ($multiYearMode && $multiYearData->isNotEmpty())
