@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RespondentIncentiveExport;
 use App\Models\Country;
+use App\Models\DoctorSpeciality;
 use Illuminate\Support\Facades\DB;
 
 class RespondentIncentiveController extends Controller
@@ -37,10 +38,12 @@ class RespondentIncentiveController extends Controller
     $countries = Country::orderBy('name')->get();
 
     // Load unique specialities from existing data
-    $specialities = RespondentIncentive::select('speciality')
-        ->distinct()
-        ->orderBy('speciality')
-        ->pluck('speciality');
+    // $specialities = RespondentIncentive::select('speciality')
+    //     ->distinct()
+    //     ->orderBy('speciality')
+    //     ->pluck('speciality');
+    $specialities = DoctorSpeciality::pluck('speciality'); 
+
 
     return view('respondent_incentives.index', compact('records', 'countries', 'specialities'));
 }
@@ -65,7 +68,7 @@ class RespondentIncentiveController extends Controller
             'respondent_name' => 'required',
             'email_id' => 'required|email',
             'contact_number' => 'required',
-            'speciality' => 'required',
+            'speciality' => 'required|string',
             'incentive_amount' => 'required|numeric',
             'incentive_form' => 'required',
             'start_date' => 'required|date',

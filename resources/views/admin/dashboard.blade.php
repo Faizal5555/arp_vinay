@@ -105,10 +105,9 @@
                             {{ $fyLabel }}
                         </option>
                     @endfor
-
                 </select>
-
             </div>
+
             <div class="col-md-3">
                 <label class="form-label fw-semibold">FY & Quarter</label>
                 <select name="quarter" class="form-select">
@@ -134,15 +133,15 @@
                     <option value="">-- From FY --</option>
                     @for ($i = 10; $i <= 50; $i++)
                         @php
-                            $fyLabel = 'FY ' . $i . '-' . sprintf('%02d', $i + 1);
+                            $fromFyLabel = 'FY ' . $i . '-' . sprintf('%02d', $i + 1);
                         @endphp
-                        <option value="{{ $fyLabel }}" {{ request('fy') == $fyLabel ? 'selected' : '' }}>
-                            {{ $fyLabel }}
+                        <option value="{{ $fromFyLabel }}" {{ request('fy_from') == $fromFyLabel ? 'selected' : '' }}>
+                            {{ $fromFyLabel }}
                         </option>
                     @endfor
-
                 </select>
             </div>
+
             <div class="col-md-2">
                 <label class="form-label fw-semibold">To FY</label>
                 <select name="fy_to" class="form-select">
@@ -583,5 +582,20 @@
             new Chart(document.getElementById('invoiceChart'), chartOptions("Invoice Year-wise", "Invoice", invoiceData,
                 '#dc3545'));
         @endif
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const url = new URL(window.location.href);
+
+            // Only reset if filters are applied
+            if (url.searchParams.has('fy') || url.searchParams.has('quarter') || url.searchParams.has('fy_from') ||
+                url.searchParams.has('fy_to')) {
+                // Reset all select fields
+                document.querySelectorAll(
+                        'select[name="fy"], select[name="quarter"], select[name="fy_from"], select[name="fy_to"]')
+                    .forEach(select => {
+                        select.selectedIndex = 0;
+                    });
+            }
+        });
     </script>
 @endpush

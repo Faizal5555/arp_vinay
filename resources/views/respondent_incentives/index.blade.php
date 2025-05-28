@@ -111,7 +111,8 @@
                                     data-incentive_form="{{ $r->incentive_form }}" data-start_date="{{ $r->start_date }}"
                                     data-end_date="{{ $r->end_date }}" data-payment_date="{{ $r->payment_date }}"
                                     data-payment_type="{{ $r->payment_type }}" data-country_id="{{ $r->country_id }}"
-                                    data-bs-toggle="modal" data-bs-target="#addModal">
+                                    data-speciality="{{ $r->speciality }}" data-bs-toggle="modal"
+                                    data-bs-target="#addModal">
                                     Edit
                                 </button>
                                 <button class="btn btn-danger btn-sm deleteBtn"
@@ -173,8 +174,12 @@
 
                         <div class="col-md-6">
                             <label for="speciality" class="form-label">Speciality</label>
-                            <input type="text" name="speciality" id="speciality" class="form-control"
-                                placeholder="Speciality" required>
+                            <select name="speciality" id="speciality" class="form-select" required>
+                                <option value="">Select Speciality</option>
+                                @foreach ($specialities as $sp)
+                                    <option value="{{ $sp }}">{{ $sp }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label for="country_id" class="form-label">Country</label>
@@ -401,7 +406,8 @@
                 modal.find('[name="end_date"]').val($(this).data('end_date'));
                 modal.find('[name="payment_date"]').val($(this).data('payment_date'));
                 modal.find('[name="payment_type"]').val($(this).data('payment_type')).trigger('change');
-                modal.find('[name="country_id"]').val($(this).data('country_id')).trigger('change'); // 
+                modal.find('[name="country_id"]').val($(this).data('country_id')).trigger('change');
+                modal.find('[name="speciality"]').val($(this).data('speciality')).trigger('change'); // 
             });
 
             // Delete with confirmation

@@ -35,51 +35,66 @@ class IncentiveSampleExport implements FromArray, WithHeadings, WithEvents
     }
 
     public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-                $sheet = $event->sheet->getDelegate();
+{
+    return [
+        AfterSheet::class => function (AfterSheet $event) {
+            $spreadsheet = $event->sheet->getDelegate()->getParent();
+            $mainSheet = $spreadsheet->getSheet(0); // Main data sheet
 
-                // Date formatting
-                foreach (['A', 'J', 'K', 'L'] as $col) {
-                    for ($row = 2; $row <= 100; $row++) {
-                        $sheet->getStyle("{$col}{$row}")
+            // STEP 1: Create hidden 'Lists' sheet
+            $listSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, 'Lists');
+            $spreadsheet->addSheet($listSheet);
+            $spreadsheet->setActiveSheetIndex(0); // Keep main sheet active
+
+            // Populate country list in hidden sheet
+            $countries = Country::pluck('name')->toArray();
+            foreach ($countries as $index => $country) {
+                $listSheet->setCellValue('A' . ($index + 1), $country);
+            }
+
+            // Hide the list sheet
+            $listSheet->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN);
+
+            // Define named range 'CountryList'
+            $countryRange = 'Lists!$A$1:$A$' . count($countries);
+            $spreadsheet->addNamedRange(
+                new \PhpOffice\PhpSpreadsheet\NamedRange('CountryList', $listSheet, '$A$1:$A$' . count($countries))
+            );
+
+            // STEP 2: Add Data Validation to main sheet (Column F)
+            $countryValidation = new DataValidation();
+            $countryValidation->setType(DataValidation::TYPE_LIST);
+            $countryValidation->setErrorStyle(DataValidation::STYLE_STOP);
+            $countryValidation->setAllowBlank(true);
+            $countryValidation->setShowDropDown(true);
+            $countryValidation->setFormula1('=CountryList');
+
+            for ($row = 2; $row <= 100; $row++) {
+                $mainSheet->getCell("F{$row}")->setDataValidation(clone $countryValidation);
+            }
+
+            // STEP 3: Date formatting
+            foreach (['A', 'J', 'K', 'L'] as $col) {
+                for ($row = 2; $row <= 100; $row++) {
+                    $mainSheet->getStyle("{$col}{$row}")
                               ->getNumberFormat()
                               ->setFormatCode('yyyy-mm-dd');
-                    }
                 }
+            }
 
-                // Payment Type dropdown (Column M)
-                $paymentValidation = new DataValidation();
-                $paymentValidation->setType(DataValidation::TYPE_LIST);
-                $paymentValidation->setErrorStyle(DataValidation::STYLE_STOP);
-                $paymentValidation->setAllowBlank(true);
-                $paymentValidation->setShowDropDown(true);
-                $paymentValidation->setFormula1('"Cash,PayPal,GiftVoucher,BankTransfer,Check,Wise,CreditCard,Others"');
-                for ($row = 2; $row <= 100; $row++) {
-                    $sheet->getCell("M{$row}")->setDataValidation(clone $paymentValidation);
-                }
+            // STEP 4: Payment Type dropdown (Column M)
+            $paymentValidation = new DataValidation();
+            $paymentValidation->setType(DataValidation::TYPE_LIST);
+            $paymentValidation->setErrorStyle(DataValidation::STYLE_STOP);
+            $paymentValidation->setAllowBlank(true);
+            $paymentValidation->setShowDropDown(true);
+            $paymentValidation->setFormula1('"Cash,PayPal,GiftVoucher,BankTransfer,Check,Wise,CreditCard,Others"');
 
-                // Country Dropdown (Column F) from DB
-                $countries = Country::pluck('name')->toArray();
-                $countryList = implode(',', array_map('trim', $countries));
+            for ($row = 2; $row <= 100; $row++) {
+                $mainSheet->getCell("M{$row}")->setDataValidation(clone $paymentValidation);
+            }
+        },
+    ];
+}
 
-                // Excel DataValidation list string must not exceed 255 characters
-                if (strlen($countryList) > 255) {
-                    $countryList = implode(',', array_slice($countries, 0, 20)); // Limit to 20 countries as fallback
-                }
-
-                $countryValidation = new DataValidation();
-                $countryValidation->setType(DataValidation::TYPE_LIST);
-                $countryValidation->setErrorStyle(DataValidation::STYLE_STOP);
-                $countryValidation->setAllowBlank(true);
-                $countryValidation->setShowDropDown(true);
-                $countryValidation->setFormula1('"' . $countryList . '"');
-
-                for ($row = 2; $row <= 100; $row++) {
-                    $sheet->getCell("F{$row}")->setDataValidation(clone $countryValidation);
-                }
-            },
-        ];
-    }
 }
