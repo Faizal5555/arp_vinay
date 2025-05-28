@@ -77,9 +77,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('respondent-incentive/store', [App\Http\Controllers\RespondentIncentiveController::class, 'store'])->name('respondent.store');
     Route::delete('/respondent-incentive/{id}', [App\Http\Controllers\RespondentIncentiveController::class, 'destroy'])->name('respondent.destroy');
     Route::get('/respondent-incentives/download', [App\Http\Controllers\RespondentIncentiveController::class, 'download'])->name('respondent.download');
-    Route::post('/pending-projects/update-status/{id}', [App\Http\Controllers\PendingProjectController::class, 'updateStatus'])->name('pending-projects.updateStatus');;
+    Route::post('/pending-projects/update-status/{id}', [App\Http\Controllers\PendingProjectController::class, 'updateStatus'])->name('pending-projects.updateStatus');
     Route::get('/current-projects/sample', [App\Http\Controllers\CurrentProjectController::class, 'downloadSample'])->name('current_projects.sample');
     Route::post('/current-projects/bulk-upload', [App\Http\Controllers\CurrentProjectController::class, 'bulkUpload'])->name('current_projects.bulk_upload');
+    Route::get('communication', [App\Http\Controllers\CommunicationController::class, 'index'])->name('communication.index');
+    Route::post('communication/store', [App\Http\Controllers\CommunicationController::class, 'store'])->name('communication.store');
+    Route::delete('/communication/delete/{id}', [App\Http\Controllers\CommunicationController::class, 'destroy'])->name('communication.destroy');
+    Route::get('/communication/search', [App\Http\Controllers\CommunicationController::class, 'search'])->name('communication.search');
 
 
 });

@@ -10,9 +10,10 @@
         <!-- Search -->
         <div class="navbar-nav align-items-center">
             <div class="nav-item d-flex align-items-center">
-                <i class="bx bx-search fs-4 lh-0"></i>
-                <input type="text" class="border-0 shadow-none form-control" placeholder="Search..."
-                    aria-label="Search..." />
+                {{-- <i class="bx bx-search fs-4 lh-0"></i> --}}
+                {{-- <input type="text" class="border-0 shadow-none form-control" placeholder="Search..."
+                    aria-label="Search..." /> --}}
+                <p>Asia Research Partners</p>
             </div>
         </div>
         <!-- /Search -->

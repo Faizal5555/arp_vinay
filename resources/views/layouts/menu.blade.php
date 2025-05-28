@@ -55,6 +55,13 @@
             <div data-i18n="Pending Projects">Respondent Incentive Details</div>
         </a>
     </li>
+    <li class="menu-item {{ Route::is('communication.index') ? 'active' : '' }}">
+        <a href="{{ route('communication.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-message-detail"></i>
+            <div data-i18n="Communication">Important Communication</div>
+        </a>
+    </li>
+
 </ul>
 <style>
     .bg-menu-theme .menu-inner>.menu-item.active:before {
