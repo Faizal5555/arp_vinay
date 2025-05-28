@@ -174,12 +174,21 @@
 
                         <div class="col-md-6">
                             <label for="speciality" class="form-label">Speciality</label>
-                            <select name="speciality" id="speciality" class="form-select" required>
+                            <select name="speciality" id="speciality-list" class="form-select" required>
                                 <option value="">Select Speciality</option>
+                                <option value="Other">Other</option>
                                 @foreach ($specialities as $sp)
                                     <option value="{{ $sp }}">{{ $sp }}</option>
                                 @endforeach
+                                {{-- Add this --}}
                             </select>
+
+                            <div id="other_speciality_box" class="mt-2" style="display:none;">
+                                <label for="other_speciality" class="form-label">Enter Other Speciality</label>
+                                <input type="text" class="form-control" id="other_speciality"
+                                    placeholder="Specify speciality">
+                            </div>
+
                         </div>
                         <div class="col-md-6">
                             <label for="country_id" class="form-label">Country</label>
@@ -355,11 +364,28 @@
             const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
             $('#todayDate').val(today);
 
+            $('#speciality-list').on('change', function() {
+                if ($(this).val() === 'Other') {
+                    $('#other_speciality_box').show();
+                    $('#other_speciality').prop('required', true);
+                } else {
+                    $('#other_speciality_box').hide();
+                    $('#other_speciality').prop('required', false);
+                }
+            });
+
+            // Trigger it once in case of edit pre-fill
+            $('#speciality-list').trigger('change');
             // Submit form via AJAX
             $('#addForm').on('submit', function(e) {
                 e.preventDefault();
                 const form = this;
                 const formData = new FormData(form);
+                // If 'Other' selected, overwrite the speciality value
+                if ($('#speciality-list').val() === 'Other') {
+                    formData.set('speciality', $('#other_speciality').val());
+                }
+
 
                 fetch("{{ route('respondent.store') }}", {
                         method: 'POST',
@@ -408,6 +434,14 @@
                 modal.find('[name="payment_type"]').val($(this).data('payment_type')).trigger('change');
                 modal.find('[name="country_id"]').val($(this).data('country_id')).trigger('change');
                 modal.find('[name="speciality"]').val($(this).data('speciality')).trigger('change'); // 
+                modal.find('[name="speciality"]').val($(this).data('speciality')).trigger('change');
+
+                if ($(this).data('speciality') === 'Other' || !$('#speciality-list option[value="' + $(this)
+                        .data('speciality') + '"]').length) {
+                    $('#speciality-list').val('Other').trigger('change');
+                    $('#other_speciality').val($(this).data('speciality'));
+                }
+
             });
 
             // Delete with confirmation
