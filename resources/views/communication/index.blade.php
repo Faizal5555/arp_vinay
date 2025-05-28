@@ -9,7 +9,7 @@
         <div class="mb-4 col-md-11 position-relative">
             <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ps-3 text-muted fs-5"></i>
             <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4" style="height:50px;"
-                placeholder="Search by subject or message...">
+                placeholder="Search by subject or communication...">
         </div>
 
         <div id="searchResults"></div>
