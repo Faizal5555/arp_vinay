@@ -120,9 +120,10 @@
             @else
                 @foreach ($projects as $proj)
                     @php
-                        $totalRevenue += $proj->original_revenue;
-                        $totalInvoice += $proj->final_invoice_amount;
-                        $totalIncentive += $proj->total_incentives_paid;
+                        $totalRevenue += floatval($proj->original_revenue);
+                        $totalInvoice += floatval($proj->final_invoice_amount);
+                        $totalIncentive += floatval($proj->total_incentives_paid);
+
                     @endphp
                     <tr>
                         <td>
