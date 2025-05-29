@@ -151,7 +151,9 @@
                         <td>{{ $proj->comments }}</td>
                         <td>{{ $proj->supplier_name }}</td>
                         <td>{{ $proj->supplier_payment_details }}</td>
-                        <td class="text-end">{{ number_format($proj->total_incentives_paid, 2) }}</td>
+                        <td class="text-end">
+                            {{ number_format(is_numeric($proj->total_incentives_paid) ? $proj->total_incentives_paid : 0, 2) }}
+                        </td>
                         <td>
                             {{ \Carbon\Carbon::parse($proj->incentive_paid_date)->format('d-m-Y') }}
                         </td>
