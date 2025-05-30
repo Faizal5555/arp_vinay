@@ -85,6 +85,7 @@
                                     </select>
                                 </td>
                                 <td><select name="client_id[]" class="form-select">
+                                        <option value="">-- Select Client --</option>
                                         @foreach ($clients as $client)
                                             <option value="{{ $client->id }}"
                                                 {{ $project->client_id == $client->id ? 'selected' : '' }}>

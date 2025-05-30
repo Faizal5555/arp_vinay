@@ -20,9 +20,9 @@ class PendingProjectController extends Controller
     $data = $request->all();
 
     $validator = Validator::make($data, [
-        'fy' => 'required|string',
-        'pn_no' => 'required|string',
-        'client_id' => 'required|exists:clients,id',
+        'fy' => 'nullable|string',
+        'pn_no' => 'nullable|string',
+        'client_id' => 'nullable|exists:clients,id',
         'company_name' => 'nullable|string',
         'pn_no' => 'nullable|string',
         'email_subject' => 'nullable|string',

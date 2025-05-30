@@ -328,9 +328,9 @@
             document.querySelectorAll('.moveRow').forEach(button => {
                 button.addEventListener('click', function() {
                     const row = this.closest('tr');
-                    const pn = row.querySelector('[name="pn_no[]"]').value;
+                    const fy = row.querySelector('[name="fy[]"]').value;
 
-                    if (!pn) {
+                    if (!fy) {
                         Swal.fire('Warning', 'Please enter PN No to identify the record.',
                             'warning');
                         return;
