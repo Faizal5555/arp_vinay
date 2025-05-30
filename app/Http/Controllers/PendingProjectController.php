@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Client;
 use App\Exports\PendingProjectsExport;
 use App\Exports\ClosedProjectsExport;
+use App\Exports\OpenLastQuarterExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PendingProjectController extends Controller
@@ -40,7 +41,7 @@ class PendingProjectController extends Controller
         'original_revenue_total' => 'nullable|numeric',
         'invoice_amount_total' => 'nullable|numeric',
         'incentives_paid_total' => 'nullable|numeric',
-        'invoice_status' => 'required|in:Paid,Pending',
+        'invoice_status' => 'required|in:Paid,Pending,Open_Last_Quarter',
         // validate rest fields if needed
     ]);
 
@@ -88,33 +89,36 @@ class PendingProjectController extends Controller
         ]);
     }
 
-
-    public function bulkUpdate(Request $request)
+public function bulkUpdate(Request $request)
 {
     $projects = $request->projects;
 
     foreach ($projects as $data) {
-        if (!empty($data['pn_no'])) {
-            PendingProject::where('pn_no', $data['pn_no'])->update([
-                'fy' => $data['fy'],
-                'quarter' => $data['quarter'],
-                'client_id' => $data['client_id'],
-                'company_name' => $data['company_name'],
-                'email_subject' => $data['email_subject'],
-                'commission_date' => $data['commission_date'],
-                'currency_amount' => $data['currency_amount'],
-                'original_revenue' => $data['original_revenue'],
-                'margin' => $data['margin'],
-                'final_invoice_amount' => $data['final_invoice_amount'],
-                'comments' => $data['comments'],
-                'supplier_name' => $data['supplier_name'],
-                'supplier_payment_details' => $data['supplier_payment_details'],
-                'total_incentives_paid' => $data['total_incentives_paid'],
-                'incentive_paid_date' => $data['incentive_paid_date'],
-                'invoice_number' => $data['invoice_number'],
-                'invoice_status' => $data['invoice_status'],
-                'partial_comment' => $data['partial_comment'],
-            ]);
+        if (!empty($data['id'])) {
+            $project = PendingProject::find($data['id']);
+            if ($project) {
+                $project->update([
+                    'fy' => $data['fy'],
+                    'quarter' => $data['quarter'],
+                    'client_id' => $data['client_id'],
+                    'company_name' => $data['company_name'],
+                    'pn_no' => $data['pn_no'],
+                    'email_subject' => $data['email_subject'],
+                    'commission_date' => $data['commission_date'],
+                    'currency_amount' => $data['currency_amount'],
+                    'original_revenue' => $data['original_revenue'],
+                    'margin' => $data['margin'],
+                    'final_invoice_amount' => $data['final_invoice_amount'],
+                    'comments' => $data['comments'],
+                    'supplier_name' => $data['supplier_name'],
+                    'supplier_payment_details' => $data['supplier_payment_details'],
+                    'total_incentives_paid' => $data['total_incentives_paid'],
+                    'incentive_paid_date' => $data['incentive_paid_date'],
+                    'invoice_number' => $data['invoice_number'],
+                    'invoice_status' => $data['invoice_status'],
+                    'partial_comment' => $data['partial_comment'],
+                ]);
+            }
         }
     }
 
@@ -139,5 +143,120 @@ class PendingProjectController extends Controller
     {
         return Excel::download(new ClosedProjectsExport, 'closed-projects.xlsx');
     }
+
+
+    public function openLastQuarter()
+    {
+        $pendingProjects = PendingProject::with('client')
+            ->where('invoice_status', 'Open_Last_Quarter')
+            ->orderByDesc('entry_date')
+            ->get();
+
+        $clients = Client::select('id', 'client_name')->get();
+
+        return view('pending_projects.open_last_quarter', compact('pendingProjects', 'clients'));
+    }
+
+
+    public function moveOpenQuarterProject(Request $request)
+{
+    $validated = $request->validate([
+        'id' => 'required|exists:pending_projects,id',
+        'status' => 'required|in:Pending,Paid'
+    ]);
+
+    $project = PendingProject::find($validated['id']);
+    $project->invoice_status = $validated['status'];
+    $project->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => "Project moved to {$validated['status']} successfully."
+    ]);
+}
+
+
+
+public function pendingajaxSearch(Request $request)
+{
+    $keyword = $request->input('keyword');
+
+    $results = PendingProject::with('client')->where(function ($query) use ($keyword) {
+        $query->where('pn_no', 'like', "%$keyword%")
+            ->orWhere('email_subject', 'like', "%$keyword%")
+            ->orWhere('company_name', 'like', "%$keyword%")
+            ->orWhere('fy', 'like', "%$keyword%")
+            ->orWhere('quarter', 'like', "%$keyword%")
+            ->orWhere('commission_date', 'like', "%$keyword%")
+            ->orWhere('currency_amount', 'like', "%$keyword%")
+            ->orWhere('original_revenue', 'like', "%$keyword%")
+            ->orWhere('margin', 'like', "%$keyword%")
+            ->orWhere('final_invoice_amount', 'like', "%$keyword%")
+            ->orWhere('comments', 'like', "%$keyword%")
+            ->orWhere('supplier_name', 'like', "%$keyword%")
+            ->orWhere('supplier_payment_details', 'like', "%$keyword%")
+            ->orWhere('total_incentives_paid', 'like', "%$keyword%")
+            ->orWhere('incentive_paid_date', 'like', "%$keyword%")
+            ->orWhere('invoice_number', 'like', "%$keyword%")
+            ->orWhere('invoice_status', 'like', "%$keyword%")
+            ->orWhere('partial_comment', 'like', "%$keyword%")
+            ->orWhere('entry_date', 'like', "%$keyword%")
+            ->orWhereHas('client', function ($q) use ($keyword) {
+                $q->where('client_name', 'like', "%$keyword%");
+            });
+    })->get();
+
+    return view('pending_projects.pending_search', compact('results'))->render();
+}
+
+public function closedajaxSearch(Request $request)
+{
+    $keyword = $request->input('keyword');
+    $type = $request->input('type'); // 'closed' or default
+
+    $query = PendingProject::query();
+
+    if ($keyword) {
+        $query->where(function ($q) use ($keyword) {
+            $q->where('pn_no', 'like', "%{$keyword}%")
+                ->orWhere('email_subject', 'like', "%{$keyword}%")
+                ->orWhere('company_name', 'like', "%{$keyword}%")
+                ->orWhere('fy', 'like', "%{$keyword}%")
+                ->orWhere('quarter', 'like', "%{$keyword}%")
+                ->orWhere('commission_date', 'like', "%{$keyword}%")
+                ->orWhere('currency_amount', 'like', "%{$keyword}%")
+                ->orWhere('original_revenue', 'like', "%{$keyword}%")
+                ->orWhere('margin', 'like', "%{$keyword}%")
+                ->orWhere('final_invoice_amount', 'like', "%{$keyword}%")
+                ->orWhere('comments', 'like', "%{$keyword}%")
+                ->orWhere('supplier_name', 'like', "%{$keyword}%")
+                ->orWhere('supplier_payment_details', 'like', "%{$keyword}%")
+                ->orWhere('total_incentives_paid', 'like', "%{$keyword}%")
+                ->orWhere('incentive_paid_date', 'like', "%{$keyword}%")
+                ->orWhere('invoice_number', 'like', "%{$keyword}%")
+                ->orWhere('invoice_status', 'like', "%{$keyword}%")
+                ->orWhere('partial_comment', 'like', "%{$keyword}%")
+                ->orWhere('entry_date', 'like', "%{$keyword}%")
+                ->orWhereHas('client', function ($qc) use ($keyword) {
+                    $qc->where('client_name', 'like', "%{$keyword}%");
+                });
+        });
+    }
+
+    if ($type === 'closed') {
+        $query->where('invoice_status', 'Paid');
+    }
+
+    $results = $query->with('client')->get();
+    $clients = Client::all(); // ✅ Make sure this is added
+
+    return view('closed_projects.closed_search', compact('results', 'clients'))->render();
+}
+
+    public function open_quarter_download()
+    {
+        return Excel::download(new OpenLastQuarterExport, 'open-quarter-projects.xlsx');
+    }
+
 
 }

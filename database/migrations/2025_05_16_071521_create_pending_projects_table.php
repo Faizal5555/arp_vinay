@@ -30,7 +30,7 @@ return new class extends Migration
             $table->text('total_incentives_paid')->nullable();
             $table->date('incentive_paid_date')->nullable();
             $table->text('invoice_number')->nullable();
-            $table->enum('invoice_status', ['Pending', 'Paid','waveoff','partial'])->nullable();
+            $table->enum('invoice_status', ['Pending', 'Paid','waveoff','partial','Open_Last_Quarter'])->nullable();
             $table->text('original_revenue_total')->nullable();
             $table->text('invoice_amount_total')->nullable();
             $table->text('incentives_paid_total')->nullable();

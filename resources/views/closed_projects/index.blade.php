@@ -9,8 +9,16 @@
                 </h4>
             </div>
         </div>
+
+        <div class="mb-4 col-md-12 position-relative">
+            <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ps-3 text-muted fs-5"></i>
+            <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100" style="height:50px;"
+                placeholder="Search PN No, Subject, Client..." autocomplete="off">
+        </div>
+
         <div class="d-flex justify-content-end">
-            <a href="{{ route('closed_projects.download') }}" class="mb-3 btn btn-primary" style="background-color:#00326e;">
+            <a href="{{ route('closed_projects.download') }}" class="mb-3 btn btn-primary"
+                style="background-color:#00326e;">
                 <i class="bx bx-download"></i> Download
             </a>
         </div>
@@ -55,6 +63,7 @@
                             @endphp
                             <tr class="project-row">
                                 <td>
+                                    <input type="hidden" name="id[]" value="{{ $project->id }}">
                                     <input type="date" name="entry_date[]" class="form-control entry-date"
                                         value="{{ isset($project->entry_date) && $project->entry_date ? \Carbon\Carbon::parse($project->entry_date)->format('Y-m-d') : '-' }}"
                                         readonly>
@@ -143,7 +152,7 @@
                                     <select name="invoice_status[]" class="form-select form-select-sm badge-select"
                                         style="min-width: 120px;">
                                         <option value="Paid" {{ $project->invoice_status == 'Paid' ? 'selected' : '' }}>
-                                            Paid</option>
+                                            Closed</option>
                                         <option value="waveoff"
                                             {{ $project->invoice_status == 'waveoff' ? 'selected' : '' }}>Waveoff</option>
                                         <option value="Pending"
@@ -151,6 +160,9 @@
                                         <option value="Partial"
                                             {{ $project->invoice_status == 'Partial' ? 'selected' : '' }}>Partial Payment
                                         </option>
+                                        <option value="Open_Last_Quarter"
+                                            {{ $project->invoice_status == 'Open_Last_Quarter' ? 'selected' : '' }}>Open
+                                            Project Last Quarter</option>
                                     </select>
                                 </td>
 
@@ -298,6 +310,12 @@
         color: #fff;
     }
 
+    .badge-select option[value="Open_Last_Quarter"] {
+        background-color: blue;
+        /* blue */
+        color: #fff;
+    }
+
     .badge-select.paid {
         background-color: #198754;
     }
@@ -305,6 +323,12 @@
     .badge-select.waveoff {
         background-color: #0d6efd;
     }
+
+    .badge-select.Open_Last_Quarter {
+        background-color: #0d6efd;
+    }
+
+
 
     /* Optional: Smaller responsive tweak */
     @media (max-width: 768px) {
@@ -327,6 +351,7 @@
 
                 rows.forEach(row => {
                     const data = {
+                        id: row.querySelector('[name="id[]"]').value,
                         fy: row.querySelector('[name="fy[]"]').value,
                         quarter: row.querySelector('[name="quarter[]"]').value,
                         client_id: row.querySelector('[name="client_id[]"]').value,
@@ -378,7 +403,7 @@
                     })
                     .catch(err => Swal.fire('Error', 'Failed to save changes.', 'error'));
             });
-            calculateTotals();
+
         });
 
         function applyBadgeStyle(select) {
@@ -391,6 +416,8 @@
                 select.classList.add('partial');
             } else if (select.value === 'waveoff') {
                 select.classList.add('waveoff');
+            } else if (select.value === 'Open_Last_Quarter') {
+                select.classList.add('Open_Last_Quarter');
             }
         }
 
@@ -441,6 +468,37 @@
         document.addEventListener('DOMContentLoaded', function() {
             bindLiveTotalListeners();
             updateTotals(); // Initial
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attach listener to search box
+            document.getElementById('searchKeyword').addEventListener('input', function() {
+                const keyword = this.value.trim();
+
+                fetch(`{{ route('closed.search') }}?keyword=${encodeURIComponent(keyword)}&type=closed`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const tbody = document.querySelector('#closedProjectsTable tbody');
+                        if (tbody) {
+                            tbody.innerHTML = html;
+                            updateTotals();
+                            bindLiveTotalListeners();
+                            document.querySelectorAll('.badge-select').forEach(select => {
+                                applyBadgeStyle(select);
+                                select.addEventListener('change', function() {
+                                    applyBadgeStyle(this);
+                                });
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Search failed:", error);
+                    });
+            });
         });
     </script>
 @endpush

@@ -225,7 +225,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (['Revenue', 'Margin', 'Invoice'] as $metric)
+                            @foreach (['Booking Revenue', 'Actual Business Margins', 'Total Invoice Value In USD'] as $metric)
                                 <tr>
                                     <th style="color:black !important;">{{ $metric }}</th>
                                     @foreach ($quarterWiseData as $quarter => $data)
@@ -241,17 +241,17 @@
             </div>
             <div class="row">
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold">{{ request('fy') }} - Revenue (Quarter-wise)</h5>
+                    <h5 class="fw-bold">{{ request('fy') }} - Booking Revenue (Quarter-wise)</h5>
                     <canvas id="fyRevenueChart" height="220"></canvas>
                 </div>
 
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold">{{ request('fy') }} - Margin (Quarter-wise)</h5>
+                    <h5 class="fw-bold">{{ request('fy') }} - Actual Business Margins (Quarter-wise)</h5>
                     <canvas id="fyMarginChart" height="220"></canvas>
                 </div>
 
                 <div class="mt-5 col-md-4">
-                    <h5 class="fw-bold"> {{ request('fy') }} - Invoice (Quarter-wise)</h5>
+                    <h5 class="fw-bold"> {{ request('fy') }} - Total Invoice Value In USD (Quarter-wise)</h5>
                     <canvas id="fyInvoiceChart" height="220"></canvas>
                 </div>
             </div>
@@ -264,9 +264,9 @@
                         <thead style="background-color: #00326e; color:white !important;">
                             <tr>
                                 {{-- <th>Total Currency</th> --}}
-                                <th>Original Revenue</th>
-                                <th>Margin</th>
-                                <th>Final Total Invoice</th>
+                                <th>Booking Revenue</th>
+                                <th>Actual Business Margins</th>
+                                <th>Total Invoice Value In USD</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -304,7 +304,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (['Revenue', 'Margin', 'Invoice'] as $metric)
+                            @foreach (['Booking Revenue', 'Actual Business Margins', 'Total Invoice Value In USD'] as $metric)
                                 <tr>
                                     <th style="color:black !important;">{{ $metric }}</th>
                                     @foreach ($multiYearData as $fy => $data)
@@ -323,17 +323,17 @@
         @if ($multiYearMode && $multiYearData->isNotEmpty())
             <div class="mt-4 row">
                 <div class="col-md-4">
-                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Revenue</h4>
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Booking Revenue</h4>
                     <canvas id="revenueChart" height="300"></canvas>
                 </div>
 
                 <div class="mt-4 col-md-4">
-                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Margin</h4>
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Actual Business Margins</h4>
                     <canvas id="marginChart" height="300"></canvas>
                 </div>
 
                 <div class="mt-4 col-md-4">
-                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Invoice</h4>
+                    <h4 class="mt-4 fw-bold">Year-wise Comparison - Total Invoice Value In USD</h4>
                     <canvas id="invoiceChart" height="300"></canvas>
                 </div>
             </div>
@@ -349,9 +349,9 @@
         @if ($fullYearMode)
             const labels = {!! json_encode($quarterWiseData->keys()) !!};
 
-            const revenue = {!! json_encode($quarterWiseData->pluck('Revenue')->map(fn($v) => (float) $v)->values()) !!};
-            const margin = {!! json_encode($quarterWiseData->pluck('Margin')->map(fn($v) => (float) $v)->values()) !!};
-            const invoice = {!! json_encode($quarterWiseData->pluck('Invoice')->map(fn($v) => (float) $v)->values()) !!};
+            const revenue = {!! json_encode($quarterWiseData->pluck('Booking Revenue')->map(fn($v) => (float) $v)->values()) !!};
+            const margin = {!! json_encode($quarterWiseData->pluck('Actual Business Margins')->map(fn($v) => (float) $v)->values()) !!};
+            const invoice = {!! json_encode($quarterWiseData->pluck('Total Invoice Value In USD')->map(fn($v) => (float) $v)->values()) !!};
 
             const yAxisOptions = {
                 beginAtZero: true,
@@ -368,19 +368,19 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                            label: 'Original Revenue',
+                            label: 'Booking Revenue',
                             data: revenue,
-                            backgroundColor: '#28a745'
-                        },
-                        {
-                            label: 'Margin',
-                            data: margin,
                             backgroundColor: '#ffc107'
                         },
                         {
-                            label: 'Final Total Invoice',
+                            label: 'Actual Business Margins',
+                            data: margin,
+                            backgroundColor: '#0000ff'
+                        },
+                        {
+                            label: 'Total Invoice Value In USD',
                             data: invoice,
-                            backgroundColor: '#dc3545'
+                            backgroundColor: '#28a745'
                         }
                     ]
                 },
@@ -426,9 +426,9 @@
                 });
             };
 
-            buildSingleMetricChart('fyRevenueChart', 'Revenue', revenue, '#28a745');
-            buildSingleMetricChart('fyMarginChart', 'Margin', margin, '#ffc107');
-            buildSingleMetricChart('fyInvoiceChart', 'Invoice', invoice, '#dc3545');
+            buildSingleMetricChart('fyRevenueChart', 'Booking Revenue', revenue, '#ffc107');
+            buildSingleMetricChart('fyMarginChart', 'Actual Business Margins', margin, '#0000ff');
+            buildSingleMetricChart('fyInvoiceChart', 'Total Invoice Value In USD', invoice, '#28a745');
         @endif
     </script>
 
@@ -437,7 +437,7 @@
             new Chart(document.getElementById('quarterChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['Original Revenue', 'Margin', 'Total Invoice'],
+                    labels: ['Booking Revenue', 'Actual Business Margins', 'Total Invoice Value In USD'],
                     datasets: [{
                         label: 'Amount in {{ $currencySymbol ?? 'USD' }}',
                         data: [
@@ -446,14 +446,14 @@
                             {{ (float) $invoiceAmountTotal }}
                         ],
                         backgroundColor: [
-                            'rgba(0, 50, 110, 0.8)',
-                            'rgba(0, 100, 200, 0.8)',
-                            'rgba(0, 150, 136, 0.8)'
+                            'rgba(255, 215, 0, 0.8)', // Yellow for Revenue
+                            'rgba(0, 123, 255, 0.8)', // Blue for Margin
+                            'rgba(40, 167, 69, 0.8)' // Green for Invoice
                         ],
                         borderColor: [
-                            'rgba(0, 50, 110, 1)',
-                            'rgba(0, 100, 200, 1)',
-                            'rgba(0, 150, 136, 1)'
+                            'rgba(255, 215, 0, 1)',
+                            'rgba(0, 123, 255, 1)',
+                            'rgba(40, 167, 69, 1)'
                         ],
                         borderWidth: 1,
                         barThickness: 70
@@ -493,21 +493,21 @@
                             //     barThickness: 40
                             // },
                             {
-                                label: 'Revenue',
-                                data: {!! json_encode($multiYearData->pluck('Revenue')->values()) !!},
-                                backgroundColor: '#28a745',
-                                barThickness: 40
-                            },
-                            {
-                                label: 'Margin',
-                                data: {!! json_encode($multiYearData->pluck('Margin')->values()) !!},
+                                label: 'Booking Revenue',
+                                data: {!! json_encode($multiYearData->pluck('Booking Revenue')->values()) !!},
                                 backgroundColor: '#ffc107',
                                 barThickness: 40
                             },
                             {
-                                label: 'Invoice',
-                                data: {!! json_encode($multiYearData->pluck('Invoice')->values()) !!},
-                                backgroundColor: '#dc3545',
+                                label: 'Actual Business Margins',
+                                data: {!! json_encode($multiYearData->pluck('Actual Business Margins')->values()) !!},
+                                backgroundColor: '#0000ff',
+                                barThickness: 40
+                            },
+                            {
+                                label: 'Total Invoice Value In USD',
+                                data: {!! json_encode($multiYearData->pluck('Total Invoice Value In USD')->values()) !!},
+                                backgroundColor: '#28a745',
                                 barThickness: 40
                             }
                         ]
@@ -539,9 +539,9 @@
         @if ($multiYearMode && $multiYearData->isNotEmpty())
             const fiscalYears = {!! json_encode($multiYearData->keys()) !!};
 
-            const revenueData = {!! json_encode($multiYearData->pluck('Revenue')->values()) !!};
-            const marginData = {!! json_encode($multiYearData->pluck('Margin')->values()) !!};
-            const invoiceData = {!! json_encode($multiYearData->pluck('Invoice')->values()) !!};
+            const revenueData = {!! json_encode($multiYearData->pluck('Booking Revenue')->values()) !!};
+            const marginData = {!! json_encode($multiYearData->pluck('Actual Business Margins')->values()) !!};
+            const invoiceData = {!! json_encode($multiYearData->pluck('Total Invoice Value In USD')->values()) !!};
 
             const chartOptions = (title, label, data, bgColor) => ({
                 type: 'bar',
@@ -575,12 +575,16 @@
                 }
             });
 
-            new Chart(document.getElementById('revenueChart'), chartOptions("Revenue Year-wise", "Revenue", revenueData,
-                '#28a745'));
-            new Chart(document.getElementById('marginChart'), chartOptions("Margin Year-wise", "Margin", marginData,
+            new Chart(document.getElementById('revenueChart'), chartOptions("Booking Revenue Year-wise", "Booking Revenue",
+                revenueData,
                 '#ffc107'));
-            new Chart(document.getElementById('invoiceChart'), chartOptions("Invoice Year-wise", "Invoice", invoiceData,
-                '#dc3545'));
+            new Chart(document.getElementById('marginChart'), chartOptions("Actual Business Margins Year-wise",
+                "Actual Business Margins",
+                marginData,
+                '#0000ff'));
+            new Chart(document.getElementById('invoiceChart'), chartOptions("Total Invoice Value In USD Year-wise",
+                "Total Invoice Value In USD", invoiceData,
+                '#28a745'));
         @endif
 
         window.addEventListener('DOMContentLoaded', function() {

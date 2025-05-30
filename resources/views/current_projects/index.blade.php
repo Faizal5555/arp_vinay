@@ -107,15 +107,22 @@
         </tr>
     </template>
     <div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="moveModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Confirm Move</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p id="moveModalMessage" class="fw-semibold text-dark"></p>
+
+                <div class="modal-body col-md-12">
+                    <label class="mb-2 fw-bold">Select Move Type</label>
+                    <select id="moveType" class="form-select w-100">
+                        <option value="Open_Last_Quarter">✓ Open Project from Last Quarter</option>
+                        <option value="Pending">✓ Move to Pending</option>
+                        <option value="Paid">✓ Move to Closed</option>
+                    </select>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="confirmMoveBtn">Confirm</button>
@@ -163,6 +170,21 @@
         </div>
     </div>
 @endsection
+<style>
+    #moveModal .modal-dialog {
+        max-width: 380px;
+        /* Adjust as needed */
+        margin: 1.75rem auto;
+    }
+
+    #moveModal .modal-body select {
+        font-weight: 600;
+    }
+
+    #moveType option {
+        font-weight: 600;
+    }
+</style>
 
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -287,11 +309,25 @@
         document.addEventListener('DOMContentLoaded', function() {
             const modalMessage = document.getElementById('moveModalMessage');
             const moveModal = new bootstrap.Modal(document.getElementById('moveModal'));
+            const moveTypeSelect = document.getElementById('moveType');
+            let selectedProjectRow = null;
 
+            // Enhance dropdown: only selected option gets ✓
+            moveTypeSelect.addEventListener('change', function() {
+                const options = this.querySelectorAll('option');
+                options.forEach(opt => {
+                    const cleanText = opt.textContent.replace('✓', '').trim();
+                    opt.textContent = cleanText;
+                });
+
+                const selected = this.selectedOptions[0];
+                selected.textContent = '✓ ' + selected.textContent;
+            });
+
+            // Handle row selection for move
             document.querySelectorAll('.moveRow').forEach(button => {
                 button.addEventListener('click', function() {
                     const row = this.closest('tr');
-                    const status = row.querySelector('[name="invoice_status[]"]').value;
                     const pn = row.querySelector('[name="pn_no[]"]').value;
 
                     if (!pn) {
@@ -301,22 +337,25 @@
                     }
 
                     selectedProjectRow = row;
-                    modalMessage.innerText = status === 'Paid' ?
-                        'Are you sure you want to move this project to the PAID list?' :
-                        'Are you sure you want to move this project to the PENDING list?';
+                    moveTypeSelect.selectedIndex = 0; // Reset dropdown to default
+                    moveTypeSelect.dispatchEvent(new Event('change')); // Force checkmark update
                     moveModal.show();
                 });
             });
 
+            // Handle move confirmation
             document.getElementById('confirmMoveBtn').addEventListener('click', function() {
                 if (!selectedProjectRow) return;
 
                 const inputs = selectedProjectRow.querySelectorAll('[name]');
                 const data = {};
+
                 inputs.forEach(input => {
                     const key = input.name.replace('[]', '');
                     data[key] = input.value;
                 });
+
+                data.invoice_status = moveTypeSelect.value; // ✅ set status from dropdown
 
                 fetch("{{ route('pending_projects.store') }}", {
                         method: 'POST',
@@ -329,10 +368,10 @@
                     .then(res => res.json())
                     .then(response => {
                         if (response.success) {
-                            // ✅ Remove row from frontend
                             selectedProjectRow.remove();
                             $('#moveModal').modal('hide');
-                            // ✅ Delete from current_projects DB
+
+                            // Delete from current_projects
                             fetch(`{{ route('projects.deleteByPn') }}`, {
                                 method: 'POST',
                                 headers: {
@@ -344,6 +383,7 @@
                                     id: data.id
                                 })
                             });
+
                             Swal.fire('Moved', response.message, 'success').then(() => location
                                 .reload());
                         } else {
@@ -354,6 +394,7 @@
                     .catch(err => Swal.fire('Error', 'Something went wrong.', 'error'));
             });
         });
+
 
         $('#bulkUploadForm').on('submit', function(e) {
             e.preventDefault();

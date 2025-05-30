@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/clients/{id}/edit', [App\Http\Controllers\ClientController::class, 'edit']);
     Route::put('/clients/{id}', [App\Http\Controllers\ClientController::class, 'update']);
     Route::delete('/clients/{id}', [App\Http\Controllers\ClientController::class, 'destroy']);
+    Route::get('/clients/download', [App\Http\Controllers\ClientController::class, 'download'])->name('clients.download');
 });
 
 
@@ -70,6 +71,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pending-projects/download', [App\Http\Controllers\PendingProjectController::class, 'download'])->name('pending_projects.download');
     Route::get('/closed/projects', [App\Http\Controllers\PendingProjectController::class, 'closedProjects'])->name('closed.projects.index');
     Route::get('/closed-projects/download', [App\Http\Controllers\PendingProjectController::class, 'closedDownload'])->name('closed_projects.download');
+    Route::get('/open/quarter/projects', [App\Http\Controllers\PendingProjectController::class, 'openLastQuarter'])->name('open.quarter.projects.index');
+    Route::post('/pending-projects/move', [App\Http\Controllers\PendingProjectController::class, 'moveOpenQuarterProject'])->name('pending_projects.move');
+    Route::get('/pending-projects/search', [App\Http\Controllers\PendingProjectController::class, 'pendingajaxSearch'])->name('pending.search');
+    Route::get('/closed-projects/search', [App\Http\Controllers\PendingProjectController::class, 'closedajaxSearch'])->name('closed.search');
+     Route::get('/open/quarter/download', [App\Http\Controllers\PendingProjectController::class, 'open_quarter_download'])->name('open_quarter.download');
+    
     Route::get('/search-projects', [App\Http\Controllers\ProjectSearchController::class, 'index'])->name('search.projects.index');
     Route::post('/search-projects/ajax', [App\Http\Controllers\ProjectSearchController::class, 'ajaxSearch'])->name('search.projects.ajax');
     Route::get('/search-projects/download', [App\Http\Controllers\ProjectSearchController::class, 'download'])->name('search.projects.download');

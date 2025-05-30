@@ -35,6 +35,14 @@
         </a>
     </li>
 
+    <li class="menu-item {{ Route::is('open.quarter.projects.index') ? 'active' : '' }}">
+        <a href="{{ route('open.quarter.projects.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-calendar-week"></i>
+            <div data-i18n="Open Projects">Open Projects from Last Quarter</div>
+        </a>
+    </li>
+
+
     <li class="menu-item {{ Route::is('pending.projects.index') ? 'active' : '' }}">
         <a href="{{ route('pending.projects.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-history"></i>

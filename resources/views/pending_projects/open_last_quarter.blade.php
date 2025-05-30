@@ -5,25 +5,24 @@
         <div class="mb-4 border-0 shadow-sm card bg-light">
             <div class="card-body d-flex align-items-center justify-content-between">
                 <h4 class="mb-0 fw-bold text-dark">
-                    <i class="bx bx-time-five me-2 text-dark"></i> Pending Projects
+                    <i class="bx bx-calendar-week me-2 text-dark"></i> Open Projects from Last Quarter
                 </h4>
             </div>
         </div>
-
 
         <div class="mb-4 col-md-12 position-relative">
             <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ps-3 text-muted fs-5"></i>
             <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100" style="height:50px;"
                 placeholder="Search PN No, Subject, Client..." autocomplete="off">
         </div>
-
         <div class="mb-2 d-flex justify-content-end">
-            <a href="{{ route('pending_projects.download') }}" class="btn btn-primary" style="background-color:#00326e;">
+            <a href="{{ route('open_quarter.download') }}" class="btn btn-primary" style="background-color:#00326e;">
                 <i class="bx bx-download"></i> Download
             </a>
         </div>
 
-        <form id="pendingProjectForm">
+
+        <form id="openQuarterForm">
             @csrf
             <div class="table-responsive">
                 <table class="table text-center align-middle table-bordered table-hover" id="pendingTable">
@@ -63,67 +62,45 @@
                                 $totalInvoice += floatval($project->final_invoice_amount);
                                 $totalIncentive += floatval($project->total_incentives_paid);
                             @endphp
-                            <tr class="project-row">
+                            <tr class="project-row" data-id="{{ $project->id }}">
+
                                 <td>
                                     <input type="hidden" name="id[]" value="{{ $project->id }}">
                                     <input type="date" name="entry_date[]" class="form-control entry-date"
-                                        value="{{ isset($project->entry_date) && $project->entry_date ? \Carbon\Carbon::parse($project->entry_date)->format('Y-m-d') : '-' }}"
-                                        readonly>
+                                        value="{{ $project->entry_date }}" readonly>
                                 </td>
-                                <td>
-                                    <select name="fy[]" class="form-select">
-                                        <option value="">-- Select FY --</option>
+                                <td><select name="fy[]" class="form-select">
                                         @for ($i = 10; $i <= 50; $i++)
-                                            @php
-                                                $fy =
-                                                    'FY ' .
-                                                    str_pad($i, 2, '0', STR_PAD_LEFT) .
-                                                    '-' .
-                                                    str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
-                                            @endphp
-                                            <option value="{{ $fy }}"
-                                                {{ isset($project) && $project->fy == $fy ? 'selected' : '' }}>
-                                                {{ $fy }}
-                                            </option>
+                                            @php $fy = 'FY ' . str_pad($i, 2, '0', STR_PAD_LEFT) . '-' . str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT); @endphp
+                                            <option value="{{ $fy }}" {{ $project->fy == $fy ? 'selected' : '' }}>
+                                                {{ $fy }}</option>
                                         @endfor
                                     </select>
                                 </td>
-
-                                <td>
-                                    <select name="quarter[]" class="form-select">
-                                        <option value="">-- Select Quarter --</option>
+                                <td><select name="quarter[]" class="form-select">
                                         @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
                                             <option value="{{ $q }}"
-                                                {{ isset($project) && $project->quarter == $q ? 'selected' : '' }}>
-                                                {{ $q }}
-                                            </option>
+                                                {{ $project->quarter == $q ? 'selected' : '' }}>{{ $q }}</option>
                                         @endforeach
                                     </select>
                                 </td>
-
-                                <td>
-                                    <select name="client_id[]" class="form-select">
+                                <td><select name="client_id[]" class="form-select">
                                         @foreach ($clients as $client)
                                             <option value="{{ $client->id }}"
                                                 {{ $project->client_id == $client->id ? 'selected' : '' }}>
-                                                {{ $client->client_name }}
-                                            </option>
+                                                {{ $client->client_name }}</option>
                                         @endforeach
                                     </select>
                                 </td>
-                                <td>
-                                    <select name="company_name[]" class="form-select">
+                                <td><select name="company_name[]" class="form-select">
                                         @foreach (['ARP', 'HPI', 'URP'] as $company)
                                             <option value="{{ $company }}"
                                                 {{ $project->company_name == $company ? 'selected' : '' }}>
-                                                {{ $company }}
-                                            </option>
+                                                {{ $company }}</option>
                                         @endforeach
-                                    </select>
-                                </td>
+                                    </select></td>
                                 <td><input type="text" name="pn_no[]" class="form-control"
-                                        value="{{ $project->pn_no }}">
-                                </td>
+                                        value="{{ $project->pn_no }}"></td>
                                 <td><input type="text" name="email_subject[]" class="form-control"
                                         value="{{ $project->email_subject }}"></td>
                                 <td><input type="date" name="commission_date[]" class="form-control"
@@ -149,17 +126,15 @@
                                 <td><input type="text" name="invoice_number[]" class="form-control"
                                         value="{{ $project->invoice_number }}"></td>
                                 <td>
-                                    <select name="invoice_status[]" class="form-select invoiceStatusSelect" disabled>
-                                        <option value="{{ $project->invoice_status }}" selected>
-                                            {{ $project->invoice_status === 'Paid' ? 'Closed' : ($project->invoice_status === 'partial' ? 'Partial Payment' : ucfirst($project->invoice_status)) }}
-                                        </option>
+                                    <select name="invoice_status[]" class="form-select">
+                                        <option value="Open_Last_Quarter" selected>Open Project Last Quarter</option>
+                                        {{-- <option value="Pending">Pending</option>
+                                        <option value="Paid">Paid</option>
+                                        <option value="partial">Partial Payment</option>
+                                        <option value="waveoff">Waveoff</option> --}}
                                     </select>
-
-
-                                    <textarea name="partial_comment[]" class="mt-2 form-control partialCommentBox fw-bold" rows="2"
-                                        placeholder="Add comment for partial payment..."
-                                        style="color: #212529; display: {{ $project->invoice_status == 'partial' ? 'block' : 'none' }};">{{ $project->partial_comment }}</textarea>
-
+                                    <textarea name="partial_comment[]" class="mt-1 form-control partialCommentBox" rows="1"
+                                        style="display: {{ $project->invoice_status == 'partial' ? 'block' : 'none' }}">{{ $project->partial_comment }}</textarea>
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-outline-warning btn-sm moveProjectBtn"
@@ -196,7 +171,6 @@
                     </button>
                 </div>
             @endif
-
         </form>
     </div>
 
@@ -210,15 +184,9 @@
                 <div class="modal-body">
                     <label for="moveType" class="mb-2 fw-bold">Select Move Type</label>
                     <select id="moveType" class="form-select">
+                        <option value="Pending">✓ Move to Pending</option>
                         <option value="Paid">✓ Move to Closed</option>
-                        <option value="partial">✓ Move to Partial Payment</option>
-                        <option value="waveoff">✓ Move to Waveoff</option>
                     </select>
-
-                    <div id="partialCommentBox" style="display: none;" class="mt-3">
-                        <label for="partialComment" class="form-label">Partial Payment Comment</label>
-                        <textarea id="partialComment" class="form-control" rows="2" placeholder="Enter comment..."></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -228,9 +196,6 @@
         </div>
     </div>
 @endsection
-
-<!-- Move Modal -->
-
 
 <style>
     /* Input + Select Styles */
@@ -318,184 +283,170 @@
         }
     }
 </style>
-
 @push('js')
     <script>
+        let selectedRow = null;
+        let selectedId = null;
+
+        // Recalculate totals for original revenue, invoice, and incentive
         function updateTotals() {
-            let original = 0,
+            let revenue = 0,
                 invoice = 0,
                 incentive = 0;
 
             document.querySelectorAll('input[name="original_revenue[]"]').forEach(input => {
-                original += parseFloat(input.value) || 0;
+                revenue += parseFloat(input.value) || 0;
             });
-
             document.querySelectorAll('input[name="final_invoice_amount[]"]').forEach(input => {
                 invoice += parseFloat(input.value) || 0;
             });
-
             document.querySelectorAll('input[name="total_incentives_paid[]"]').forEach(input => {
                 incentive += parseFloat(input.value) || 0;
             });
 
-            // Set text only if the elements exist
-            const originalEl = document.getElementById('totalOriginal');
-            const invoiceEl = document.getElementById('totalInvoice');
-            const incentiveEl = document.getElementById('totalIncentive');
-
-            if (originalEl) originalEl.textContent = original.toFixed(2);
-            if (invoiceEl) invoiceEl.textContent = invoice.toFixed(2);
-            if (incentiveEl) incentiveEl.textContent = incentive.toFixed(2);
+            document.getElementById('totalOriginal').textContent = revenue.toFixed(2);
+            document.getElementById('totalInvoice').textContent = invoice.toFixed(2);
+            document.getElementById('totalIncentive').textContent = incentive.toFixed(2);
         }
 
-
-        let selectedProjectId = null;
-        let selectedRow = null;
-
-        document.querySelectorAll('.moveProjectBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                selectedRow = this.closest('tr');
-                selectedProjectId = this.getAttribute('data-id');
-                document.getElementById('moveType').value = 'Paid';
-                document.getElementById('partialCommentBox').style.display = 'none';
-                document.getElementById('partialComment').value = '';
-                $('#moveModal').modal('show');
+        // Attach change listeners to update totals in real-time
+        function bindTotalChangeListeners() {
+            const inputs = document.querySelectorAll(
+                'input[name="original_revenue[]"], input[name="final_invoice_amount[]"], input[name="total_incentives_paid[]"]'
+            );
+            inputs.forEach(input => {
+                input.addEventListener('input', updateTotals);
+                input.addEventListener('change', updateTotals);
             });
-        });
+        }
 
-        document.getElementById('moveType').addEventListener('change', function() {
-            if (this.value === 'partial') {
-                document.getElementById('partialCommentBox').style.display = 'block';
-            } else {
-                document.getElementById('partialCommentBox').style.display = 'none';
-            }
-        });
+        // Bind Save All logic for form submission
+        function bindSaveAll() {
+            document.getElementById('openQuarterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
 
-        document.getElementById('confirmMoveBtn').addEventListener('click', function() {
-            if (!selectedProjectId) return;
+                const rows = document.querySelectorAll('.project-row');
+                const projects = [];
+
+                rows.forEach(row => {
+                    const data = {
+                        id: row.querySelector('[name="id[]"]').value,
+                        fy: row.querySelector('[name="fy[]"]').value,
+                        quarter: row.querySelector('[name="quarter[]"]').value,
+                        client_id: row.querySelector('[name="client_id[]"]').value,
+                        company_name: row.querySelector('[name="company_name[]"]').value,
+                        pn_no: row.querySelector('[name="pn_no[]"]').value,
+                        email_subject: row.querySelector('[name="email_subject[]"]').value,
+                        commission_date: row.querySelector('[name="commission_date[]"]').value,
+                        currency_amount: row.querySelector('[name="currency_amount[]"]').value,
+                        original_revenue: row.querySelector('[name="original_revenue[]"]').value,
+                        margin: row.querySelector('[name="margin[]"]').value,
+                        final_invoice_amount: row.querySelector('[name="final_invoice_amount[]"]')
+                            .value,
+                        comments: row.querySelector('[name="comments[]"]').value,
+                        supplier_name: row.querySelector('[name="supplier_name[]"]').value,
+                        supplier_payment_details: row.querySelector(
+                            '[name="supplier_payment_details[]"]').value,
+                        total_incentives_paid: row.querySelector('[name="total_incentives_paid[]"]')
+                            .value,
+                        incentive_paid_date: row.querySelector('[name="incentive_paid_date[]"]').value,
+                        invoice_number: row.querySelector('[name="invoice_number[]"]').value,
+                        invoice_status: row.querySelector('[name="invoice_status[]"]').value,
+                        partial_comment: row.querySelector('[name="partial_comment[]"]')?.value || ''
+                    };
+                    projects.push(data);
+                });
+
+                fetch(`{{ route('pending.bulkUpdate') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            projects
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Success', data.message, 'success');
+                        } else {
+                            Swal.fire('Error', data.message || 'Something went wrong.', 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error', 'Failed to save changes.', 'error'));
+            });
+        }
+
+        // Named function for confirm move to prevent duplicate bindings
+        function handleMoveConfirmClick() {
+            if (!selectedRow || !selectedId) return;
 
             const status = document.getElementById('moveType').value;
-            const partialComment = document.getElementById('partialComment').value;
 
-            const formData = new FormData();
-            formData.append('status', status);
-            if (status === 'partial') {
-                formData.append('partial_comment', partialComment);
-            }
-
-            fetch(`{{ url('pending-projects/update-status') }}/${selectedProjectId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (status === 'Paid' || status === 'waveoff') {
-                            selectedRow.remove(); // remove from table
-                        } else {
-                            selectedRow.classList.add('table-success');
-                            setTimeout(() => selectedRow.classList.remove('table-success'), 1500);
-                        }
-                        updateTotals();
-                        $('#moveModal').modal('hide');
-                        Swal.fire('Moved', data.message, 'success');
-                    } else {
-                        Swal.fire('Error', data.message || 'Update failed.', 'error');
-                    }
-                })
-                .catch(() => {
-                    Swal.fire('Error', 'Something went wrong.', 'error');
-                });
-        });
-
-
-
-        document.getElementById('pendingProjectForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const rows = document.querySelectorAll('.project-row');
-            const projects = [];
-
-            rows.forEach(row => {
-                const data = {
-                    id: row.querySelector('[name="id[]"]').value, // Add this
-                    fy: row.querySelector('[name="fy[]"]').value,
-                    quarter: row.querySelector('[name="quarter[]"]').value,
-                    client_id: row.querySelector('[name="client_id[]"]').value,
-                    company_name: row.querySelector('[name="company_name[]"]').value,
-                    pn_no: row.querySelector('[name="pn_no[]"]').value,
-                    email_subject: row.querySelector('[name="email_subject[]"]').value,
-                    commission_date: row.querySelector('[name="commission_date[]"]').value,
-                    currency_amount: row.querySelector('[name="currency_amount[]"]').value,
-                    original_revenue: row.querySelector('[name="original_revenue[]"]').value,
-                    margin: row.querySelector('[name="margin[]"]').value,
-                    final_invoice_amount: row.querySelector('[name="final_invoice_amount[]"]').value,
-                    comments: row.querySelector('[name="comments[]"]').value,
-                    supplier_name: row.querySelector('[name="supplier_name[]"]').value,
-                    supplier_payment_details: row.querySelector('[name="supplier_payment_details[]"]')
-                        .value,
-                    total_incentives_paid: row.querySelector('[name="total_incentives_paid[]"]').value,
-                    incentive_paid_date: row.querySelector('[name="incentive_paid_date[]"]').value,
-                    invoice_number: row.querySelector('[name="invoice_number[]"]').value,
-                    invoice_status: row.querySelector('[name="invoice_status[]"]').value,
-                    partial_comment: row.querySelector('[name="partial_comment[]"]')?.value || ''
-                };
-
-                projects.push(data);
-            });
-
-            fetch(`{{ route('pending.bulkUpdate') }}`, {
+            fetch(`{{ url('pending-projects/move') }}`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        projects
+                        id: selectedId,
+                        status
                     })
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Success', data.message, 'success');
+                        selectedRow.remove();
+                        $('#moveModal').modal('hide');
+                        updateTotals();
+                        Swal.fire('Moved', data.message, 'success');
                     } else {
                         Swal.fire('Error', data.message || 'Something went wrong.', 'error');
                     }
                 })
-                .catch(err => Swal.fire('Error', 'Failed to save changes.', 'error'));
-        });
-
-        function bindTotalChangeListeners() {
-            const inputs = document.querySelectorAll(
-                'input[name="original_revenue[]"], input[name="final_invoice_amount[]"], input[name="total_incentives_paid[]"]'
-            );
-
-            inputs.forEach(input => {
-                input.addEventListener('input', updateTotals); // For typing
-                input.addEventListener('change', updateTotals); // For paste/select/etc.
-            });
+                .catch(() => Swal.fire('Error', 'Something went wrong.', 'error'));
         }
 
-        // Call it once DOM is ready
-        document.addEventListener('DOMContentLoaded', bindTotalChangeListeners);
-
+        // Binds modal open buttons and sets up confirm button (once)
         function bindMoveModal() {
-            document.querySelectorAll('.moveProjectBtn').forEach(btn => {
-                btn.addEventListener('click', function() {
+            document.querySelectorAll('.moveProjectBtn').forEach(button => {
+                button.addEventListener('click', function() {
                     selectedRow = this.closest('tr');
-                    selectedProjectId = this.getAttribute('data-id');
-                    document.getElementById('moveType').value = 'Paid';
-                    document.getElementById('partialCommentBox').style.display = 'none';
-                    document.getElementById('partialComment').value = '';
+                    selectedId = this.dataset.id;
+
+                    document.getElementById('moveType').selectedIndex = 0;
                     $('#moveModal').modal('show');
                 });
             });
+
+            // Dropdown tick update
+            document.getElementById('moveType').addEventListener('change', function() {
+                const opts = this.options;
+                for (let i = 0; i < opts.length; i++) {
+                    opts[i].text = opts[i].text.replace('✓', '').trim();
+                }
+                opts[this.selectedIndex].text = '✓ ' + opts[this.selectedIndex].text;
+            });
+
+            // Remove any old handlers before adding new one to avoid duplicates
+            const oldBtn = document.getElementById('confirmMoveBtn');
+            const newBtn = oldBtn.cloneNode(true);
+            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+            newBtn.addEventListener('click', handleMoveConfirmClick);
         }
 
+        // Main initializer
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTotals();
+            bindTotalChangeListeners();
+            bindMoveModal();
+            bindSaveAll();
+        });
 
+        // Search functionality
         document.getElementById('searchKeyword').addEventListener('input', function() {
             const keyword = this.value.trim();
 
@@ -507,9 +458,9 @@
                 .then(response => response.text())
                 .then(html => {
                     document.querySelector('#pendingTable tbody').innerHTML = html;
-                    updateTotals(); // Recalculate totals
-                    bindTotalChangeListeners(); // Rebind for recalculation
-                    bindMoveModal();
+                    updateTotals();
+                    bindTotalChangeListeners();
+                    bindMoveModal(); // rebinds move modal safely
                 });
         });
     </script>

@@ -5,6 +5,14 @@
         <button class="mb-3 btn btn-primary" style="background-color:#00326e; color:white;" data-bs-toggle="modal"
             data-bs-target="#clientModal">Add Client</button>
 
+
+        <div class="mb-2 d-flex justify-content-end">
+            <a href="{{ route('clients.download') }}" class="btn btn-primary" style="background-color:#00326e;">
+                <i class="bx bx-download"></i> Download
+            </a>
+        </div>
+
+
         <table class="table" id="clientTable">
             <thead>
                 <tr>

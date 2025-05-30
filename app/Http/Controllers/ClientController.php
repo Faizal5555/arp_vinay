@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Client;
+use App\Exports\ClientsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 
@@ -110,6 +112,12 @@ class ClientController extends Controller
         $client->delete();
 
         return response()->json(['success' => 1, 'message' => 'Client deleted successfully']);
+    }
+
+
+     public function download()
+    {
+        return Excel::download(new ClientsExport, 'clients.xlsx');
     }
 
 

@@ -35,7 +35,9 @@ class DashboardController extends Controller
     
         // Initialize base queries for current & pending projects
         $currentQuery = DB::table('current_projects');
-        $pendingQuery = DB::table('pending_projects');
+        $pendingQuery = DB::table('pending_projects') 
+            ->whereNotNull('fy')
+          ->whereNotNull('quarter');
     
         if ($fy) {
             $currentQuery->where('fy', $fy);
@@ -95,13 +97,16 @@ class DashboardController extends Controller
         // Filtered clients (based on FY and Quarter like your projects)
         $filteredClientCount = Client::whereIn('id', $allClientIds)->count();
         $currentProjectCount = $currentQuery->count();
-        $pendingProjectCount = $pendingQuery->whereIn('invoice_status', ['Pending', 'Partial'])->count();
-    
-        $closedProjectCount = DB::table('pending_projects')
-            ->whereIn('invoice_status', ['Waveoff', 'Paid'])
-            ->when($fy, fn($q) => $q->where('fy', $fy))
-            ->when($quarter && !$multiYearMode, fn($q) => $q->where('quarter', $quarter))
-            ->count();
+      // Clone the unfiltered pendingQuery for counting pending projects
+$pendingProjectCount = (clone $pendingQuery)
+    ->whereIn('invoice_status', ['Pending', 'Partial'])
+    ->count();
+
+// Clone again for closed project count
+$closedProjectCount = (clone $pendingQuery)
+    ->whereIn('invoice_status', ['Paid', 'Waveoff'])
+    ->count();
+
     
         // Totals (based on FY + Quarter)
         $currencyTotal = $pendingQuery->sum('currency_amount') + $currentQuery->sum('currency_amount');
@@ -129,9 +134,9 @@ class DashboardController extends Controller
     
             return [$q => [
                 'Currency' => ($current->currency ?? 0) + ($pending->currency ?? 0),
-                'Revenue'  => ($current->revenue ?? 0) + ($pending->revenue ?? 0),
-                'Margin'   => ($current->margin ?? 0) + ($pending->margin ?? 0),
-                'Invoice'  => ($current->invoice ?? 0) + ($pending->invoice ?? 0),
+                'Booking Revenue'  => ($current->revenue ?? 0) + ($pending->revenue ?? 0),
+                'Actual Business Margins'   => ($current->margin ?? 0) + ($pending->margin ?? 0),
+                'Total Invoice Value In USD'  => ($current->invoice ?? 0) + ($pending->invoice ?? 0),
             ]];
         });
     
@@ -188,9 +193,9 @@ class DashboardController extends Controller
     
                 $multiYearData[$fyItem] = [
                     'Currency' => ($current->currency ?? 0) + ($pending->currency ?? 0),
-                    'Revenue'  => ($current->revenue ?? 0) + ($pending->revenue ?? 0),
-                    'Margin'   => ($current->margin ?? 0) + ($pending->margin ?? 0),
-                    'Invoice'  => ($current->invoice ?? 0) + ($pending->invoice ?? 0),
+                    'Booking Revenue'  => ($current->revenue ?? 0) + ($pending->revenue ?? 0),
+                    'Actual Business Margins'   => ($current->margin ?? 0) + ($pending->margin ?? 0),
+                    'Total Invoice Value In USD'  => ($current->invoice ?? 0) + ($pending->invoice ?? 0),
                 ];
             }
         }
