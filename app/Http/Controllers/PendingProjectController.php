@@ -13,6 +13,8 @@ use App\Exports\OpenLastQuarterExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\OpenLastQuarterSampleExport;
 use App\Imports\OpenLastQuarterImport;
+use App\Exports\PendingProjectsSampleExport;
+use App\Imports\PendingProjectsImport;
 
 class PendingProjectController extends Controller
 {
@@ -373,6 +375,26 @@ public function openLastQuarterBulkUpload(Request $request)
     } catch (\Exception $e) {
         return response()->json(['success' => false, 'message' => $e->getMessage()]);
     }
+}
+
+
+public function pendingupload(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx'
+    ]);
+
+    try {
+        Excel::import(new PendingProjectsImport, $request->file('file'));
+        return back()->with('success', 'Projects imported successfully!');
+    } catch (\Exception $e) {
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+public function downloadSample()
+{
+    return Excel::download(new PendingProjectsSampleExport, 'sample_pending_projects.xlsx');
 }
 
 
