@@ -75,8 +75,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pending-projects/move', [App\Http\Controllers\PendingProjectController::class, 'moveOpenQuarterProject'])->name('pending_projects.move');
     Route::get('/pending-projects/search', [App\Http\Controllers\PendingProjectController::class, 'pendingajaxSearch'])->name('pending.search');
     Route::get('/closed-projects/search', [App\Http\Controllers\PendingProjectController::class, 'closedajaxSearch'])->name('closed.search');
-     Route::get('/open/quarter/download', [App\Http\Controllers\PendingProjectController::class, 'open_quarter_download'])->name('open_quarter.download');
-    
+    Route::get('/open/quarter/download', [App\Http\Controllers\PendingProjectController::class, 'open_quarter_download'])->name('open_quarter.download');
+    Route::get('/open-last-quarter/search', [App\Http\Controllers\PendingProjectController::class, 'openLastQuarterAjaxSearch'])->name('openlastquarter.search');
+
+
     Route::get('/search-projects', [App\Http\Controllers\ProjectSearchController::class, 'index'])->name('search.projects.index');
     Route::post('/search-projects/ajax', [App\Http\Controllers\ProjectSearchController::class, 'ajaxSearch'])->name('search.projects.ajax');
     Route::get('/search-projects/download', [App\Http\Controllers\ProjectSearchController::class, 'download'])->name('search.projects.download');

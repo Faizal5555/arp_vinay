@@ -451,7 +451,7 @@
         document.getElementById('searchKeyword').addEventListener('input', function() {
             const keyword = this.value.trim();
 
-            fetch(`{{ route('pending.search') }}?keyword=${encodeURIComponent(keyword)}`, {
+            fetch(`{{ route('openlastquarter.search') }}?keyword=${encodeURIComponent(keyword)}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
@@ -461,7 +461,7 @@
                     document.querySelector('#pendingTable tbody').innerHTML = html;
                     updateTotals();
                     bindTotalChangeListeners();
-                    bindMoveModal(); // rebinds move modal safely
+                    bindMoveModal(); // rebind move modal
                 });
         });
     </script>

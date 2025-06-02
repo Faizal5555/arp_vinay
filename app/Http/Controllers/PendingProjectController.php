@@ -181,7 +181,9 @@ public function pendingajaxSearch(Request $request)
 {
     $keyword = $request->input('keyword');
 
-    $results = PendingProject::with('client')->where(function ($query) use ($keyword) {
+    $results = PendingProject::with('client')
+    ->whereIn('invoice_status', ['Pending', 'partial']) 
+    ->where(function ($query) use ($keyword) {
         $query->where('pn_no', 'like', "%$keyword%")
             ->orWhere('email_subject', 'like', "%$keyword%")
             ->orWhere('company_name', 'like', "%$keyword%")
@@ -244,7 +246,7 @@ public function closedajaxSearch(Request $request)
     }
 
     if ($type === 'closed') {
-        $query->where('invoice_status', 'Paid');
+        $query->where('invoice_status',['Paid', 'waveoff']);
     }
 
     $results = $query->with('client')->get();
@@ -257,6 +259,47 @@ public function closedajaxSearch(Request $request)
     {
         return Excel::download(new OpenLastQuarterExport, 'open-quarter-projects.xlsx');
     }
+   
+
+    public function openLastQuarterAjaxSearch(Request $request)
+{
+    $keyword = $request->input('keyword');
+
+    $query = PendingProject::query()
+        ->where('invoice_status', 'Open_Last_Quarter'); // ✅ Only Open_Last_Quarter projects
+
+    if ($keyword) {
+        $query->where(function ($q) use ($keyword) {
+            $q->where('pn_no', 'like', "%{$keyword}%")
+                ->orWhere('email_subject', 'like', "%{$keyword}%")
+                ->orWhere('company_name', 'like', "%{$keyword}%")
+                ->orWhere('fy', 'like', "%{$keyword}%")
+                ->orWhere('quarter', 'like', "%{$keyword}%")
+                ->orWhere('commission_date', 'like', "%{$keyword}%")
+                ->orWhere('currency_amount', 'like', "%{$keyword}%")
+                ->orWhere('original_revenue', 'like', "%{$keyword}%")
+                ->orWhere('margin', 'like', "%{$keyword}%")
+                ->orWhere('final_invoice_amount', 'like', "%{$keyword}%")
+                ->orWhere('comments', 'like', "%{$keyword}%")
+                ->orWhere('supplier_name', 'like', "%{$keyword}%")
+                ->orWhere('supplier_payment_details', 'like', "%{$keyword}%")
+                ->orWhere('total_incentives_paid', 'like', "%{$keyword}%")
+                ->orWhere('incentive_paid_date', 'like', "%{$keyword}%")
+                ->orWhere('invoice_number', 'like', "%{$keyword}%")
+                ->orWhere('partial_comment', 'like', "%{$keyword}%")
+                ->orWhere('entry_date', 'like', "%{$keyword}%")
+                ->orWhereHas('client', function ($qc) use ($keyword) {
+                    $qc->where('client_name', 'like', "%{$keyword}%");
+                });
+        });
+    }
+
+    $results = $query->with('client')->get();
+    $clients = Client::all(); // For client dropdown list if needed
+
+    // Return the updated partial view
+    return view('pending_projects.pending_search', compact('results', 'clients'))->render();
+}
 
 
 }

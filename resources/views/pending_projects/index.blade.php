@@ -5,7 +5,7 @@
         <div class="mb-4 border-0 shadow-sm card bg-light">
             <div class="card-body d-flex align-items-center justify-content-between">
                 <h4 class="mb-0 fw-bold text-dark">
-                    <i class="bx bx-time-five me-2 text-dark"></i> Pending Projects
+                    <i class="bx bx-time-five me-2 text-dark"></i> Pending Invoices
                 </h4>
             </div>
         </div>
