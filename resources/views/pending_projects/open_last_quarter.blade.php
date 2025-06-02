@@ -9,11 +9,62 @@
                 </h4>
             </div>
         </div>
+        <form id="filterForm" class="mb-4 row g-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <select name="fy" class="form-select">
+                        <option value="">-- FY --</option>
+                        @for ($i = 10; $i <= 50; $i++)
+                            @php
+                                $fy =
+                                    'FY ' .
+                                    str_pad($i, 2, '0', STR_PAD_LEFT) .
+                                    '-' .
+                                    str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
+                            @endphp
+                            <option value="{{ $fy }}">{{ $fy }}</option>
+                        @endfor
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="quarter" class="form-select">
+                        <option value="">-- Quarter --</option>
+                        @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
+                            <option value="{{ $q }}">{{ $q }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="client_id" class="form-select">
+                        <option value="">-- Client --</option>
+                        @foreach ($clients as $client)
+                            <option value="{{ $client->id }}">{{ $client->client_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="company_name" class="form-select">
+                        <option value="">-- Company --</option>
+                        <option value="ARP">ARP</option>
+                        <option value="HPI">HPI</option>
+                        <option value="URP">URP</option>
+                    </select>
+                </div>
+
+                <div class="mt-3 col-md-3">
+                    <input type="text" name="pn_no" class="form-control" placeholder="Search PN No">
+                </div>
+            </div>
+        </form>
+
 
         <div class="mb-4 col-md-12 position-relative">
             <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ps-3 text-muted fs-5"></i>
-            <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100" style="height:50px;"
-                placeholder="Search PN No, Subject, Client..." autocomplete="off">
+            <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100"
+                style="height:50px;" placeholder="Search, Subject, Client..." autocomplete="off">
         </div>
         <div class="mb-2 d-flex justify-content-end">
             <a href="{{ route('open_quarter.download') }}" class="btn btn-primary" style="background-color:#00326e;">
@@ -72,7 +123,8 @@
                                 <td><select name="fy[]" class="form-select">
                                         @for ($i = 10; $i <= 50; $i++)
                                             @php $fy = 'FY ' . str_pad($i, 2, '0', STR_PAD_LEFT) . '-' . str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT); @endphp
-                                            <option value="{{ $fy }}" {{ $project->fy == $fy ? 'selected' : '' }}>
+                                            <option value="{{ $fy }}"
+                                                {{ $project->fy == $fy ? 'selected' : '' }}>
                                                 {{ $fy }}</option>
                                         @endfor
                                     </select>
@@ -80,7 +132,8 @@
                                 <td><select name="quarter[]" class="form-select">
                                         @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
                                             <option value="{{ $q }}"
-                                                {{ $project->quarter == $q ? 'selected' : '' }}>{{ $q }}</option>
+                                                {{ $project->quarter == $q ? 'selected' : '' }}>{{ $q }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -448,21 +501,38 @@
         });
 
         // Search functionality
-        document.getElementById('searchKeyword').addEventListener('input', function() {
-            const keyword = this.value.trim();
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('filterForm');
+            const keywordInput = document.getElementById('searchKeyword');
 
-            fetch(`{{ route('openlastquarter.search') }}?keyword=${encodeURIComponent(keyword)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    document.querySelector('#pendingTable tbody').innerHTML = html;
-                    updateTotals();
-                    bindTotalChangeListeners();
-                    bindMoveModal(); // rebind move modal
-                });
+            function triggerAjaxLoad() {
+                const formData = new URLSearchParams(new FormData(form)).toString();
+                const keyword = keywordInput.value.trim();
+                const queryString = formData + '&keyword=' + encodeURIComponent(keyword);
+
+                fetch(`{{ route('openlastquarter.search') }}?${queryString}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        document.querySelector('#pendingTable tbody').innerHTML = html;
+                        updateTotals();
+                        bindTotalChangeListeners();
+                        bindMoveModal(); // If you have move modal functionality
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Attach listeners
+            form.querySelectorAll('select, input[name="pn_no"]').forEach(input => {
+                input.addEventListener('change', triggerAjaxLoad);
+                input.addEventListener('input', triggerAjaxLoad);
+            });
+
+            keywordInput.addEventListener('input', triggerAjaxLoad);
         });
     </script>
 @endpush

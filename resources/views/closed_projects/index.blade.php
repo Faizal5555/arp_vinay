@@ -10,10 +10,71 @@
             </div>
         </div>
 
+        <form id="filterForm" class="mb-4 row g-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>FY</label>
+                    <select name="fy" class="form-select">
+                        <option value="">-- FY --</option>
+                        @for ($i = 10; $i <= 50; $i++)
+                            @php
+                                $fy =
+                                    'FY ' .
+                                    str_pad($i, 2, '0', STR_PAD_LEFT) .
+                                    '-' .
+                                    str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT);
+                            @endphp
+                            <option value="{{ $fy }}">{{ $fy }}</option>
+                        @endfor
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Quarter</label>
+                    <select name="quarter" class="form-select">
+                        <option value="">-- Quarter --</option>
+                        @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
+                            <option value="{{ $q }}">{{ $q }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label> Client</label>
+                    <select name="client_id" class="form-select">
+                        <option value="">-- Client --</option>
+                        @foreach ($clients as $client)
+                            <option value="{{ $client->id }}">{{ $client->client_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Company</label>
+                    <select name="company_name" class="form-select">
+                        <option value="">-- Company --</option>
+                        <option value="ARP">ARP</option>
+                        <option value="HPI">HPI</option>
+                        <option value="URP">URP</option>
+                    </select>
+                </div>
+
+                <div class="mt-3 col-md-2">
+                    <label>PN No</label>
+                    <input type="text" name="pn_no" class="form-control" placeholder="Search PN No">
+                </div>
+            </div>
+
+            {{-- <div class="col-md-2">
+                <input type="text" name="keyword" id="searchKeyword" class="form-control" placeholder="General Search">
+            </div> --}}
+        </form>
+
+
         <div class="mb-4 col-md-12 position-relative">
             <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ps-3 text-muted fs-5"></i>
-            <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100" style="height:50px;"
-                placeholder="Search PN No, Subject, Client..." autocomplete="off">
+            <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100"
+                style="height:50px;" placeholder="Search Subject, Client..." autocomplete="off">
         </div>
 
         <div class="d-flex justify-content-end">
@@ -471,34 +532,40 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Attach listener to search box
-            document.getElementById('searchKeyword').addEventListener('input', function() {
-                const keyword = this.value.trim();
+            const form = document.getElementById('filterForm');
+            const searchKeywordInput = document.getElementById('searchKeyword');
 
-                fetch(`{{ route('closed.search') }}?keyword=${encodeURIComponent(keyword)}&type=closed`, {
+            function triggerAjaxLoad() {
+                const formData = new URLSearchParams(new FormData(form)).toString();
+                const keyword = searchKeywordInput.value.trim();
+                const fullQuery = formData + '&keyword=' + encodeURIComponent(keyword);
+
+                fetch(`{{ route('closed.search') }}?${fullQuery}`, {
+                        method: 'GET', // ✅ Important: method GET here
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest' // to detect AJAX
                         }
                     })
                     .then(response => response.text())
                     .then(html => {
-                        const tbody = document.querySelector('#closedProjectsTable tbody');
-                        if (tbody) {
-                            tbody.innerHTML = html;
-                            updateTotals();
-                            bindLiveTotalListeners();
-                            document.querySelectorAll('.badge-select').forEach(select => {
-                                applyBadgeStyle(select);
-                                select.addEventListener('change', function() {
-                                    applyBadgeStyle(this);
-                                });
-                            });
-                        }
+                        document.querySelector('#closedProjectsTable tbody').innerHTML = html;
+                        updateTotals();
+                        bindLiveTotalListeners();
+                        document.querySelectorAll('.badge-select').forEach(select => {
+                            applyBadgeStyle(select);
+                        });
                     })
-                    .catch(error => {
-                        console.error("Search failed:", error);
-                    });
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Trigger when filter dropdowns change
+            form.querySelectorAll('select, input[name="pn_no"]').forEach(input => {
+                input.addEventListener('change', triggerAjaxLoad);
+                input.addEventListener('input', triggerAjaxLoad);
             });
+
+            // Also trigger on general search box
+            searchKeywordInput.addEventListener('input', triggerAjaxLoad);
         });
     </script>
 @endpush

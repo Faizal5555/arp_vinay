@@ -179,46 +179,85 @@ public function bulkUpdate(Request $request)
 
 public function pendingajaxSearch(Request $request)
 {
-    $keyword = $request->input('keyword');
+    $query = PendingProject::query()
+        ->whereIn('invoice_status', ['Pending', 'partial']); // Only Pending/Partial projects
 
-    $results = PendingProject::with('client')
-    ->whereIn('invoice_status', ['Pending', 'partial']) 
-    ->where(function ($query) use ($keyword) {
-        $query->where('pn_no', 'like', "%$keyword%")
-            ->orWhere('email_subject', 'like', "%$keyword%")
-            ->orWhere('company_name', 'like', "%$keyword%")
-            ->orWhere('fy', 'like', "%$keyword%")
-            ->orWhere('quarter', 'like', "%$keyword%")
-            ->orWhere('commission_date', 'like', "%$keyword%")
-            ->orWhere('currency_amount', 'like', "%$keyword%")
-            ->orWhere('original_revenue', 'like', "%$keyword%")
-            ->orWhere('margin', 'like', "%$keyword%")
-            ->orWhere('final_invoice_amount', 'like', "%$keyword%")
-            ->orWhere('comments', 'like', "%$keyword%")
-            ->orWhere('supplier_name', 'like', "%$keyword%")
-            ->orWhere('supplier_payment_details', 'like', "%$keyword%")
-            ->orWhere('total_incentives_paid', 'like', "%$keyword%")
-            ->orWhere('incentive_paid_date', 'like', "%$keyword%")
-            ->orWhere('invoice_number', 'like', "%$keyword%")
-            ->orWhere('invoice_status', 'like', "%$keyword%")
-            ->orWhere('partial_comment', 'like', "%$keyword%")
-            ->orWhere('entry_date', 'like', "%$keyword%")
-            ->orWhereHas('client', function ($q) use ($keyword) {
-                $q->where('client_name', 'like', "%$keyword%");
-            });
-    })->get();
+    // Apply Filters
+    if ($request->filled('fy')) {
+        $query->where('fy', $request->fy);
+    }
+    if ($request->filled('quarter')) {
+        $query->where('quarter', $request->quarter);
+    }
+    if ($request->filled('client_id')) {
+        $query->where('client_id', $request->client_id);
+    }
+    if ($request->filled('company_name')) {
+        $query->where('company_name', $request->company_name);
+    }
+    if ($request->filled('pn_no')) {
+        $query->where('pn_no', 'like', '%' . $request->pn_no . '%');
+    }
 
+    // General Keyword Search (across all columns)
+    if ($request->filled('keyword')) {
+        $keyword = $request->keyword;
+        $query->where(function ($q) use ($keyword) {
+            $q->where('pn_no', 'like', "%{$keyword}%")
+                ->orWhere('email_subject', 'like', "%{$keyword}%")
+                ->orWhere('company_name', 'like', "%{$keyword}%")
+                ->orWhere('fy', 'like', "%{$keyword}%")
+                ->orWhere('quarter', 'like', "%{$keyword}%")
+                ->orWhere('commission_date', 'like', "%{$keyword}%")
+                ->orWhere('currency_amount', 'like', "%{$keyword}%")
+                ->orWhere('original_revenue', 'like', "%{$keyword}%")
+                ->orWhere('margin', 'like', "%{$keyword}%")
+                ->orWhere('final_invoice_amount', 'like', "%{$keyword}%")
+                ->orWhere('comments', 'like', "%{$keyword}%")
+                ->orWhere('supplier_name', 'like', "%{$keyword}%")
+                ->orWhere('supplier_payment_details', 'like', "%{$keyword}%")
+                ->orWhere('total_incentives_paid', 'like', "%{$keyword}%")
+                ->orWhere('incentive_paid_date', 'like', "%{$keyword}%")
+                ->orWhere('invoice_number', 'like', "%{$keyword}%")
+                ->orWhere('invoice_status', 'like', "%{$keyword}%")
+                ->orWhere('partial_comment', 'like', "%{$keyword}%")
+                ->orWhere('entry_date', 'like', "%{$keyword}%")
+                ->orWhereHas('client', function ($q) use ($keyword) {
+                    $q->where('client_name', 'like', "%{$keyword}%");
+                });
+        });
+    }
+
+    $results = $query->with('client')->get();
     return view('pending_projects.pending_search', compact('results'))->render();
 }
 
+
 public function closedajaxSearch(Request $request)
 {
-    $keyword = $request->input('keyword');
-    $type = $request->input('type'); // 'closed' or default
+    $query = PendingProject::query()
+        ->whereIn('invoice_status', ['Paid', 'waveoff']); // Only Closed Projects
 
-    $query = PendingProject::query();
+    // Apply Filters
+    if ($request->filled('fy')) {
+        $query->where('fy', $request->fy);
+    }
+    if ($request->filled('quarter')) {
+        $query->where('quarter', $request->quarter);
+    }
+    if ($request->filled('client_id')) {
+        $query->where('client_id', $request->client_id);
+    }
+    if ($request->filled('company_name')) {
+        $query->where('company_name', $request->company_name);
+    }
+    if ($request->filled('pn_no')) {
+        $query->where('pn_no', 'like', '%' . $request->pn_no . '%');
+    }
 
-    if ($keyword) {
+    // General Keyword Search (across all columns)
+    if ($request->filled('keyword')) {
+        $keyword = $request->keyword;
         $query->where(function ($q) use ($keyword) {
             $q->where('pn_no', 'like', "%{$keyword}%")
                 ->orWhere('email_subject', 'like', "%{$keyword}%")
@@ -245,12 +284,8 @@ public function closedajaxSearch(Request $request)
         });
     }
 
-    if ($type === 'closed') {
-        $query->where('invoice_status',['Paid', 'waveoff']);
-    }
-
     $results = $query->with('client')->get();
-    $clients = Client::all(); // ✅ Make sure this is added
+    $clients = Client::all();
 
     return view('closed_projects.closed_search', compact('results', 'clients'))->render();
 }
@@ -261,14 +296,31 @@ public function closedajaxSearch(Request $request)
     }
    
 
-    public function openLastQuarterAjaxSearch(Request $request)
+ public function openLastQuarterAjaxSearch(Request $request)
 {
-    $keyword = $request->input('keyword');
-
     $query = PendingProject::query()
         ->where('invoice_status', 'Open_Last_Quarter'); // ✅ Only Open_Last_Quarter projects
 
-    if ($keyword) {
+    // Filters
+    if ($request->filled('fy')) {
+        $query->where('fy', $request->fy);
+    }
+    if ($request->filled('quarter')) {
+        $query->where('quarter', $request->quarter);
+    }
+    if ($request->filled('client_id')) {
+        $query->where('client_id', $request->client_id);
+    }
+    if ($request->filled('company_name')) {
+        $query->where('company_name', $request->company_name);
+    }
+    if ($request->filled('pn_no')) {
+        $query->where('pn_no', 'like', '%' . $request->pn_no . '%');
+    }
+
+    // Keyword Search
+    if ($request->filled('keyword')) {
+        $keyword = $request->keyword;
         $query->where(function ($q) use ($keyword) {
             $q->where('pn_no', 'like', "%{$keyword}%")
                 ->orWhere('email_subject', 'like', "%{$keyword}%")
@@ -295,11 +347,11 @@ public function closedajaxSearch(Request $request)
     }
 
     $results = $query->with('client')->get();
-    $clients = Client::all(); // For client dropdown list if needed
+    $clients = Client::all();
 
-    // Return the updated partial view
     return view('pending_projects.pending_search', compact('results', 'clients'))->render();
 }
+
 
 
 }
