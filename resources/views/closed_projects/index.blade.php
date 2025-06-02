@@ -77,11 +77,15 @@
                 style="height:50px;" placeholder="Search Subject, Client..." autocomplete="off">
         </div>
 
-        <div class="d-flex justify-content-end">
+        <div class="gap-2 d-flex justify-content-end">
             <a href="{{ route('closed_projects.download') }}" class="mb-3 btn btn-primary"
                 style="background-color:#00326e;">
                 <i class="bx bx-download"></i> Download
             </a>
+            <button type="button" class="mb-3 btn" style="background-color:#00326e; color:white;" data-bs-toggle="modal"
+                data-bs-target="#uploadClosedModal">
+                <i class="bx bx-upload"></i> Upload
+            </button>
         </div>
         <form id="pendingProjectForm">
             @csrf
@@ -256,6 +260,41 @@
             @endif
         </form>
 
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadClosedModal" tabindex="-1" aria-labelledby="uploadClosedModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="closedBulkUploadForm" enctype="multipart/form-data" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold">Upload Closed Projects</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Download Sample File</label>
+                        <div>
+                            <a href="{{ route('closed_projects.download_sample') }}" class="btn btn-sm btn-primary"
+                                style="background-color:#00326e;">
+                                <i class="bx bx-download"></i> Download Sample XLSX
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Upload XLSX File</label>
+                        <input type="file" name="file" class="form-control w-100" accept=".xlsx" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="closedUploadBtn" class="btn btn-primary"
+                        style="background-color:#00326e;">
+                        <i class="bx bx-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 @endsection
 <style>
@@ -566,6 +605,50 @@
 
             // Also trigger on general search box
             searchKeywordInput.addEventListener('input', triggerAjaxLoad);
+        });
+
+        $('#closedBulkUploadForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const fileInput = this.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
+
+            if (!file || !file.name.endsWith('.xlsx')) {
+                Swal.fire('Invalid File', 'Please upload a valid .xlsx file.', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: "{{ route('closed_projects.upload') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $('#closedUploadBtn')
+                        .prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Uploading...');
+                },
+                success: function(response) {
+                    $('#closedUploadBtn').prop('disabled', false).html('Upload');
+                    $('#uploadClosedModal').modal('hide');
+
+                    Swal.fire('Success', 'Projects imported successfully!', 'success').then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    $('#closedUploadBtn').prop('disabled', false).html('Upload');
+                    $('#uploadClosedModal').modal('hide');
+
+                    let msg = 'Upload failed.';
+                    if (xhr.responseJSON?.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    Swal.fire('Error', msg, 'error');
+                }
+            });
         });
     </script>
 @endpush

@@ -81,7 +81,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/openlastquarter/bulk-upload', [App\Http\Controllers\PendingProjectController::class, 'openLastQuarterBulkUpload'])->name('openlastquarter.bulk_upload');
     Route::post('/pending-projects/upload', [App\Http\Controllers\PendingProjectController::class, 'pendingupload'])->name('pending_projects.upload');
     Route::get('/pending-projects/download-sample', [App\Http\Controllers\PendingProjectController::class, 'downloadSample'])->name('pending_projects.download_sample');
-
+    Route::get('/closed-projects/download-sample', [App\Http\Controllers\PendingProjectController::class, 'downloadClosedSample'])->name('closed_projects.download_sample');
+    Route::post('/closed-projects/upload', [App\Http\Controllers\PendingProjectController::class, 'uploadClosed'])->name('closed_projects.upload');
 
 
     Route::get('/search-projects', [App\Http\Controllers\ProjectSearchController::class, 'index'])->name('search.projects.index');

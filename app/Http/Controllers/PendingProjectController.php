@@ -15,6 +15,8 @@ use App\Exports\OpenLastQuarterSampleExport;
 use App\Imports\OpenLastQuarterImport;
 use App\Exports\PendingProjectsSampleExport;
 use App\Imports\PendingProjectsImport;
+use App\Exports\ClosedProjectsSampleExport;
+use App\Imports\ClosedProjectsImport;
 
 class PendingProjectController extends Controller
 {
@@ -397,5 +399,22 @@ public function downloadSample()
     return Excel::download(new PendingProjectsSampleExport, 'sample_pending_projects.xlsx');
 }
 
+
+public function downloadClosedSample()
+{
+    return Excel::download(new ClosedProjectsSampleExport, 'sample_closed_projects.xlsx');
+}
+
+// Upload Closed Projects
+public function uploadClosed(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx'
+    ]);
+
+    Excel::import(new ClosedProjectsImport, $request->file('file'));
+
+    return response()->json(['success' => true, 'message' => 'Closed Projects Imported Successfully!']);
+}
 
 }
