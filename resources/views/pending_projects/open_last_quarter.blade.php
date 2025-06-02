@@ -66,10 +66,14 @@
             <input type="text" id="searchKeyword" class="shadow-sm form-control ps-5 rounded-4 w-100"
                 style="height:50px;" placeholder="Search, Subject, Client..." autocomplete="off">
         </div>
-        <div class="mb-2 d-flex justify-content-end">
+        <div class="gap-2 mb-2 d-flex justify-content-end">
             <a href="{{ route('open_quarter.download') }}" class="btn btn-primary" style="background-color:#00326e;">
                 <i class="bx bx-download"></i> Download
             </a>
+            <button type="button" class="btn" style="background-color:#00326e; color:white;" data-bs-toggle="modal"
+                data-bs-target="#uploadOpenQuarterModal">
+                <i class="bx bx-upload"></i> Upload
+            </button>
         </div>
 
 
@@ -247,6 +251,48 @@
                     <button type="button" class="btn btn-primary" id="confirmMoveBtn">Confirm</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadOpenQuarterModal" tabindex="-1" aria-labelledby="uploadModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="openQuarterBulkUploadForm" enctype="multipart/form-data" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold" id="uploadModalLabel">Upload Projects</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="row">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Download Sample File</label>
+                            <div>
+                                <a href="{{ route('openlastquarter.download_sample') }}" class="btn btn-sm"
+                                    style="background-color:#00326e; color:white;>
+                                <i class="bx bx-download"></i> Download Sample XLSX
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-md-12">
+                            <label clsass="form-label fw-bold">Upload XLSX File</label>
+                            <input type="file" class="w-100 form-control" name="file" accept=".xlsx" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" style="background-color:#00326e; color:white;"
+                        id="openQuarterUploadBtn">
+                        <i class="bx bx-upload"></i>
+                        Upload
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
@@ -533,6 +579,62 @@
             });
 
             keywordInput.addEventListener('input', triggerAjaxLoad);
+        });
+
+
+        $('#openQuarterBulkUploadForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const fileInput = this.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
+
+            if (!file || !file.name.endsWith('.xlsx')) {
+                Swal.fire('Invalid File', 'Please upload a valid .xlsx file.', 'error');
+                return;
+            }
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: "{{ route('openlastquarter.bulk_upload') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('input[name="_token"]').val()
+                },
+                beforeSend: function() {
+                    $('#openQuarterUploadBtn')
+                        .prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Uploading...');
+                },
+                success: function(response) {
+                    $('#openQuarterUploadBtn')
+                        .prop('disabled', false)
+                        .html('Upload');
+
+                    $('#uploadOpenQuarterModal').modal('hide');
+
+                    if (response.success) {
+                        Swal.fire('Success', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message || 'Upload failed.', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    $('#openQuarterUploadBtn')
+                        .prop('disabled', false)
+                        .html('Upload');
+
+                    $('#uploadOpenQuarterModal').modal('hide');
+                    let msg = 'Upload failed.';
+                    if (xhr.responseJSON?.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    Swal.fire('Error', msg, 'error');
+                }
+            });
         });
     </script>
 @endpush

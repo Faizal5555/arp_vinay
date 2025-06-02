@@ -11,6 +11,8 @@ use App\Exports\PendingProjectsExport;
 use App\Exports\ClosedProjectsExport;
 use App\Exports\OpenLastQuarterExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\OpenLastQuarterSampleExport;
+use App\Imports\OpenLastQuarterImport;
 
 class PendingProjectController extends Controller
 {
@@ -352,6 +354,26 @@ public function closedajaxSearch(Request $request)
     return view('pending_projects.pending_search', compact('results', 'clients'))->render();
 }
 
+public function downloadOpenLastQuarterSample()
+{
+    return Excel::download(new OpenLastQuarterSampleExport, 'sample_open_last_quarter.xlsx');
+}
+
+
+
+public function openLastQuarterBulkUpload(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx'
+    ]);
+
+    try {
+        Excel::import(new OpenLastQuarterImport, $request->file('file'));
+        return response()->json(['success' => true, 'message' => 'Projects uploaded successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()]);
+    }
+}
 
 
 }

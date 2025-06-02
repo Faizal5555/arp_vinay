@@ -77,6 +77,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/closed-projects/search', [App\Http\Controllers\PendingProjectController::class, 'closedajaxSearch'])->name('closed.search');
     Route::get('/open/quarter/download', [App\Http\Controllers\PendingProjectController::class, 'open_quarter_download'])->name('open_quarter.download');
     Route::get('/open-last-quarter/search', [App\Http\Controllers\PendingProjectController::class, 'openLastQuarterAjaxSearch'])->name('openlastquarter.search');
+    Route::get('/openlastquarter/download-sample', [App\Http\Controllers\PendingProjectController::class, 'downloadOpenLastQuarterSample'])->name('openlastquarter.download_sample');
+    Route::post('/openlastquarter/bulk-upload', [App\Http\Controllers\PendingProjectController::class, 'openLastQuarterBulkUpload'])->name('openlastquarter.bulk_upload');
 
 
     Route::get('/search-projects', [App\Http\Controllers\ProjectSearchController::class, 'index'])->name('search.projects.index');
