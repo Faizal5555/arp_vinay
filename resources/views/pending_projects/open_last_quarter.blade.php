@@ -125,6 +125,7 @@
                                         value="{{ $project->entry_date }}" readonly>
                                 </td>
                                 <td><select name="fy[]" class="form-select">
+                                        <option value="">-- Select FY --</option>
                                         @for ($i = 10; $i <= 50; $i++)
                                             @php $fy = 'FY ' . str_pad($i, 2, '0', STR_PAD_LEFT) . '-' . str_pad(($i + 1) % 100, 2, '0', STR_PAD_LEFT); @endphp
                                             <option value="{{ $fy }}"
@@ -134,6 +135,7 @@
                                     </select>
                                 </td>
                                 <td><select name="quarter[]" class="form-select">
+                                        <option value="">-- Select Quarter --</option>
                                         @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $q)
                                             <option value="{{ $q }}"
                                                 {{ $project->quarter == $q ? 'selected' : '' }}>{{ $q }}
@@ -151,6 +153,7 @@
                                     </select>
                                 </td>
                                 <td><select name="company_name[]" class="form-select">
+                                        <option value="">-- Select Company --</option>
                                         @foreach (['ARP', 'HPI', 'URP'] as $company)
                                             <option value="{{ $company }}"
                                                 {{ $project->company_name == $company ? 'selected' : '' }}>
