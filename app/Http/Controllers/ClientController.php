@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Client;
 use App\Exports\ClientsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ClientsSampleExport;
+use App\Imports\ClientsImport;
 
 
 
@@ -119,6 +121,32 @@ class ClientController extends Controller
     {
         return Excel::download(new ClientsExport, 'clients.xlsx');
     }
+
+    public function downloadSample()
+{
+    return Excel::download(new ClientsSampleExport, 'clients_sample.xlsx');
+}
+
+public function bulkUpload(Request $request)
+{
+    $request->validate([
+        'bulk_file' => 'required|file|mimes:xlsx'
+    ]);
+
+    try {
+        Excel::import(new ClientsImport, $request->file('bulk_file'));
+
+        return response()->json([
+            'success' => 1,
+            'message' => 'Clients imported successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => 0,
+            'message' => 'Import failed: ' . $e->getMessage()
+        ]);
+    }
+}
 
 
 

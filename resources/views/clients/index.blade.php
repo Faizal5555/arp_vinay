@@ -10,6 +10,11 @@
             <a href="{{ route('clients.download') }}" class="btn btn-primary" style="background-color:#00326e;">
                 <i class="bx bx-download"></i> Download
             </a>
+
+            <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#uploadModal"
+                style="background-color:#00326e;">
+                <i class="bx bx-upload"></i> Upload
+            </button>
         </div>
 
 
@@ -68,6 +73,38 @@
                     <div class="modal-footer">
                         <button class="btn btn-success" type="submit">Save Client</button>
                     </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="uploadForm" enctype="multipart/form-data" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold">Upload Clients</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Download Sample File</label>
+                        <div>
+                            <a href="{{ route('clients.download.sample') }}" class="btn btn-sm btn-primary"
+                                style="background-color:#00326e;">
+                                <i class="bx bx-download"></i> Download Sample XLSX
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Upload XLSX File</label>
+                        <input type="file" name="bulk_file" class="form-control w-100" accept=".xlsx" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="clientUploadBtn" class="btn btn-primary" style="background-color:#00326e;">
+                        <i class="bx bx-upload"></i> Upload
+                    </button>
                 </div>
             </form>
         </div>
@@ -277,6 +314,54 @@
                             }
                         }
                     });
+                }
+            });
+        });
+
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const fileInput = this.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
+
+            if (!file || !file.name.endsWith('.xlsx')) {
+                Swal.fire('Invalid File', 'Please upload a valid .xlsx file.', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: "{{ route('clients.upload') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $('#clientUploadBtn')
+                        .prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Uploading...');
+                },
+                success: function(response) {
+                    $('#clientUploadBtn').prop('disabled', false).html('Upload');
+                    $('#uploadModal').modal('hide');
+
+                    if (response.success) {
+                        Swal.fire('Success', response.message, 'success').then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    $('#clientUploadBtn').prop('disabled', false).html('Upload');
+                    $('#uploadModal').modal('hide');
+
+                    let msg = 'Upload failed.';
+                    if (xhr.responseJSON?.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    Swal.fire('Error', msg, 'error');
                 }
             });
         });
