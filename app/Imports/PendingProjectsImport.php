@@ -34,7 +34,7 @@ class PendingProjectsImport implements ToModel, WithHeadingRow
             'total_incentives_paid' => $row['total_incentives_paid'] ?? null,
             'incentive_paid_date' => $this->nullableDate($row['incentive_paid_date'] ?? null),
             'invoice_number' => $row['invoice_number'] ?? null,
-            'invoice_status' => $row['invoice_status'] ?? null,
+            'invoice_status' => $row['invoice_status'] ?? 'Pending',
         ]);
     }
 
