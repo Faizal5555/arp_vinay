@@ -229,7 +229,7 @@ public function pendingajaxSearch(Request $request)
                 ->orWhere('partial_comment', 'like', "%{$keyword}%")
                 ->orWhere('entry_date', 'like', "%{$keyword}%")
                 ->orWhereHas('client', function ($q) use ($keyword) {
-                    $q->where('client_name', 'like', "%{$keyword}%");
+                    $q->whereRaw('TRIM(client_name) LIKE ?', ["%{$keyword}%"]);
                 });
         });
     }
@@ -284,8 +284,8 @@ public function closedajaxSearch(Request $request)
                 ->orWhere('invoice_status', 'like', "%{$keyword}%")
                 ->orWhere('partial_comment', 'like', "%{$keyword}%")
                 ->orWhere('entry_date', 'like', "%{$keyword}%")
-                ->orWhereHas('client', function ($qc) use ($keyword) {
-                    $qc->where('client_name', 'like', "%{$keyword}%");
+                ->orWhereHas('client', function ($q) use ($keyword) {
+                    $q->whereRaw('TRIM(client_name) LIKE ?', ["%{$keyword}%"]);
                 });
         });
     }
@@ -346,8 +346,8 @@ public function closedajaxSearch(Request $request)
                 ->orWhere('invoice_number', 'like', "%{$keyword}%")
                 ->orWhere('partial_comment', 'like', "%{$keyword}%")
                 ->orWhere('entry_date', 'like', "%{$keyword}%")
-                ->orWhereHas('client', function ($qc) use ($keyword) {
-                    $qc->where('client_name', 'like', "%{$keyword}%");
+                ->orWhereHas('client', function ($q) use ($keyword) {
+                    $q->whereRaw('TRIM(client_name) LIKE ?', ["%{$keyword}%"]);
                 });
         });
     }
