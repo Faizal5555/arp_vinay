@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Client;
-use App\Models\CurrentProject;
+use App\Models\PendingProject;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -20,7 +20,7 @@ class ClosedProjectsImport implements ToModel, WithHeadingRow
         // Map client name to ID
         $client = Client::where('client_name', $row['client_id'])->first();
 
-        return new CurrentProject([
+        return new PendingProject([
             'entry_date' => $this->formatDate($row['entry_date'] ?? null),
             'fy' => $row['fy'] ?? null,
             'quarter' => $row['quarter'] ?? null,

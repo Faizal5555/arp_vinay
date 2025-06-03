@@ -411,7 +411,6 @@ public function uploadClosed(Request $request)
     $request->validate([
         'file' => 'required|file|mimes:xlsx'
     ]);
-
     Excel::import(new ClosedProjectsImport, $request->file('file'));
 
     return response()->json(['success' => true, 'message' => 'Closed Projects Imported Successfully!']);
