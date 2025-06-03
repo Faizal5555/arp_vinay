@@ -48,6 +48,7 @@
 
         <td>
             <select name="client_id[]" class="form-select">
+                <option value="">-- Select Client --</option>
                 @foreach (\App\Models\Client::all() as $client)
                     <option value="{{ $client->id }}" {{ $project->client_id == $client->id ? 'selected' : '' }}>
                         {{ $client->client_name }}
@@ -58,6 +59,7 @@
 
         <td>
             <select name="company_name[]" class="form-select">
+                <option value="">-- Select Company --</option>
                 @foreach (['ARP', 'HPI', 'URP'] as $company)
                     <option value="{{ $company }}" {{ $project->company_name == $company ? 'selected' : '' }}>
                         {{ $company }}
