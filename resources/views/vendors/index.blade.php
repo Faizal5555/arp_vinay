@@ -32,18 +32,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3"><label>Name</label><input type="text" name="vendor_name" class="form-control"
-                                required></div>
+                        <div class="mb-3"><label>Name</label><input type="text" name="vendor_name"
+                                class="form-control"></div>
                         <div class="mb-3"><label>Country</label><input type="text" name="vendor_country"
-                                class="form-control" required></div>
+                                class="form-control"></div>
                         <div class="mb-3"><label>Email</label><input type="email" name="vendor_email"
-                                class="form-control" required></div>
+                                class="form-control"></div>
                         <div class="mb-3"><label>Manager</label><input type="text" name="vendor_manager"
-                                class="form-control" required></div>
+                                class="form-control"></div>
                         <div class="mb-3"><label>Phone</label><input type="text" name="vendor_phoneno"
-                                class="form-control" required></div>
+                                class="form-control"></div>
                         <div class="mb-3"><label>WhatsApp</label><input type="text" name="vendor_whatsapp"
-                                class="form-control" required></div>
+                                class="form-control"></div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-success" type="submit">Save Vendor</button>
@@ -96,24 +96,7 @@
 
             // jQuery Validation + Submit Handler
             $('#vendorForm').validate({
-                rules: {
-                    vendor_email: {
-                        required: true,
-                        email: true
-                    },
-                    vendor_phoneno: {
-                        required: true,
-                        number: true,
-                        minlength: 9,
-                        maxlength: 15
-                    },
-                    vendor_whatsapp: {
-                        required: true,
-                        number: true,
-                        minlength: 9,
-                        maxlength: 15
-                    }
-                },
+                rules: {}, // 🧹 No rules
                 submitHandler: function(form) {
                     let formData = new FormData(form);
                     let id = $('#vendor_id').val();
@@ -143,25 +126,16 @@
                         },
                         error: function(xhr) {
                             $('#vendorModal').modal('hide');
-                            if (xhr.responseJSON?.error) {
-                                let messages = Object.values(xhr.responseJSON.error).flat()
-                                    .join("\n");
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Validation Error',
-                                    text: messages
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Unexpected Error',
-                                    text: "Something went wrong."
-                                });
-                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unexpected Error',
+                                text: "Something went wrong."
+                            });
                         }
                     });
                 }
             });
+
 
             // Edit vendor
             $(document).on('click', '.editBtn', function() {

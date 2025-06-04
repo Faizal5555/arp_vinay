@@ -23,22 +23,22 @@ class ClientController extends Controller
     public function store(Request $req)
     {
         // Step 1: Validate fields
-        $validator = Validator::make($req->all(), [
-            'client_name'      => 'required|string|max:255',
-            'client_country'   => 'required|string|max:255',
-            'client_email'     => 'required|email|unique:clients,client_email',
-            'client_manager'   => 'required|string|max:255',
-            'client_phoneno'   => 'required|numeric|digits_between:9,15|unique:clients,client_phoneno',
-            'client_whatsapp'  => 'required|numeric|digits_between:9,15|unique:clients,client_whatsapp',
-        ]);
+        // $validator = Validator::make($req->all(), [
+        //     'client_name'      => 'required|string|max:255',
+        //     'client_country'   => 'required|string|max:255',
+        //     'client_email'     => 'required|email|unique:clients,client_email',
+        //     'client_manager'   => 'required|string|max:255',
+        //     'client_phoneno'   => 'required|numeric|digits_between:9,15|unique:clients,client_phoneno',
+        //     'client_whatsapp'  => 'required|numeric|digits_between:9,15|unique:clients,client_whatsapp',
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => 0,
-                'message' => 'Validation Error',
-                'error'   => $validator->errors()
-            ], 422);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'success' => 0,
+        //         'message' => 'Validation Error',
+        //         'error'   => $validator->errors()
+        //     ], 422);
+        // }
 
         // Step 2: Create and save client
         $client = new Client();
@@ -80,21 +80,21 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
 
-        $validator = Validator::make($req->all(), [
-            'client_name' => 'required',
-            'client_country' => 'required',
-            'client_email' => 'required|email|unique:clients,client_email,' . $id,
-            'client_manager' => 'required',
-            'client_phoneno' => 'required|numeric|digits_between:9,15|unique:clients,client_phoneno,' . $id,
-            'client_whatsapp' => 'required|numeric|digits_between:9,15|unique:clients,client_whatsapp,' . $id,
-        ]);
+        // $validator = Validator::make($req->all(), [
+        //     'client_name' => 'required',
+        //     'client_country' => 'required',
+        //     'client_email' => 'required|email|unique:clients,client_email,' . $id,
+        //     'client_manager' => 'required',
+        //     'client_phoneno' => 'required|numeric|digits_between:9,15|unique:clients,client_phoneno,' . $id,
+        //     'client_whatsapp' => 'required|numeric|digits_between:9,15|unique:clients,client_whatsapp,' . $id,
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                "success" => 0,
-                "error" => $validator->errors()
-            ], 422);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         "success" => 0,
+        //         "error" => $validator->errors()
+        //     ], 422);
+        // }
 
         $client->update($req->only([
             'client_name', 'client_country', 'client_email',

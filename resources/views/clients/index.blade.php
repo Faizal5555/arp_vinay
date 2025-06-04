@@ -47,27 +47,27 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label>Client Name</label>
-                            <input type="text" name="client_name" class="form-control" required>
+                            <input type="text" name="client_name" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label>Country</label>
-                            <input type="text" name="client_country" class="form-control" required>
+                            <input type="text" name="client_country" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label>Email</label>
-                            <input type="email" name="client_email" class="form-control" required>
+                            <input type="email" name="client_email" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label>Manager</label>
-                            <input type="text" name="client_manager" class="form-control" required>
+                            <input type="text" name="client_manager" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label>Phone Number</label>
-                            <input type="text" name="client_phoneno" class="form-control" required>
+                            <input type="text" name="client_phoneno" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label>WhatsApp Number</label>
-                            <input type="text" name="client_whatsapp" class="form-control" required>
+                            <input type="text" name="client_whatsapp" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -159,27 +159,18 @@
             // Setup jQuery Validation
             $("#clientForm").validate({
                 rules: {
-                    client_name: {
-                        required: true
-                    },
-                    client_country: {
-                        required: true
-                    },
+                    client_name: {},
+                    client_country: {},
                     client_email: {
-                        required: true,
                         email: true
                     },
-                    client_manager: {
-                        required: true
-                    },
+                    client_manager: {},
                     client_phoneno: {
-                        required: true,
                         number: true,
                         minlength: 9,
                         maxlength: 15
                     },
                     client_whatsapp: {
-                        required: true,
                         number: true,
                         minlength: 9,
                         maxlength: 15
@@ -364,6 +355,13 @@
                     Swal.fire('Error', msg, 'error');
                 }
             });
+        });
+
+
+        // Clear form when clicking "Add Client"
+        $(document).on('click', '[data-bs-target="#clientModal"]', function() {
+            $('#clientForm')[0].reset(); // Reset the form inputs
+            $('#client_id').val(''); // Clear hidden client_id
         });
     </script>
 @endpush
