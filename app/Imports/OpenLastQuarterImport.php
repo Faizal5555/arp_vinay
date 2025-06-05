@@ -6,6 +6,7 @@ use App\Models\PendingProject;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate; 
 
 class OpenLastQuarterImport implements ToModel, WithHeadingRow
 {
@@ -39,6 +40,7 @@ class OpenLastQuarterImport implements ToModel, WithHeadingRow
         ]);
     }
 
+  
     protected function nullableDate($value)
     {
         if (!$value) {
@@ -46,11 +48,18 @@ class OpenLastQuarterImport implements ToModel, WithHeadingRow
         }
 
         try {
+            // ✅ Detect if it’s a numeric Excel serial date
+            if (is_numeric($value)) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
+
+            // Otherwise parse normal date strings
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
-            return null;
+            return null; // If parsing fails, return null
         }
     }
+
 
     protected function mapClient($name)
     {

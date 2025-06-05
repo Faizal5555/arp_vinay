@@ -6,7 +6,7 @@ use App\Models\PendingProject;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Carbon\Carbon;
-
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate; 
 class PendingProjectsImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
@@ -38,19 +38,24 @@ class PendingProjectsImport implements ToModel, WithHeadingRow
         ]);
     }
 
-    protected function nullableDate($value)
+   protected function nullableDate($value)
     {
         if (!$value) {
             return null;
         }
 
         try {
+            // ✅ Handle Excel numeric serial date
+            if (is_numeric($value)) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
+
+            // Normal text date
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
-            return null;
+            return null; // If parsing fails
         }
     }
-
     protected function mapClient($name)
     {
         if (!$name) {

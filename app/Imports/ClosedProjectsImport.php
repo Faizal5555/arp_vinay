@@ -7,7 +7,7 @@ use App\Models\PendingProject;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 class ClosedProjectsImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
@@ -24,7 +24,7 @@ class ClosedProjectsImport implements ToModel, WithHeadingRow
             'entry_date' => $this->formatDate($row['entry_date'] ?? null),
             'fy' => $row['fy'] ?? null,
             'quarter' => $row['quarter'] ?? null,
-            'client_id' => $client ? $client->id : null,
+            'client_id' => $this->mapClient($row['client_id'] ?? null),
             'company_name' => $row['company_name'] ?? null,
             'pn_no' => $row['pn_no'] ?? null,
             'email_subject' => $row['email_subject'] ?? null,
@@ -44,15 +44,31 @@ class ClosedProjectsImport implements ToModel, WithHeadingRow
         ]);
     }
 
+   
     protected function formatDate($value)
     {
-        if (!$value) return null;
+        if (!$value) {
+            return null;
+        }
 
         try {
+            if (is_numeric($value)) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    protected function mapClient($name)
+    {
+        if (!$name) {
+            return null;
+        }
+
+        $client = Client::where('client_name', trim($name))->first();
+        return $client ? $client->id : null;
     }
 }
 
