@@ -197,4 +197,24 @@ public function bulkUpload(Request $request)
         ]);
     }
 }
+
+public function deleteById(Request $request)
+{
+    $project = CurrentProject::find($request->id);
+
+    if (!$project) {
+        return response()->json([
+            'success' => 0,
+            'message' => 'Project not found.'
+        ], 404);
+    }
+
+    $project->delete();
+
+    return response()->json([
+        'success' => 1,
+        'message' => 'Project deleted successfully!'
+    ]);
+}
+
 }

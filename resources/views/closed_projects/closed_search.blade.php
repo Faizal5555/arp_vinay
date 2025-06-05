@@ -107,5 +107,13 @@
                     Project Last Quarter</option>
             </select>
         </td>
+        <td>
+
+            <button type="button" class="btn btn-outline-danger btn-sm deleteProjectBtn"
+                data-id="{{ $project->id }}">
+                <i class="bx bx-trash"></i> Delete
+            </button>
+
+        </td>
     </tr>
 @endforeach

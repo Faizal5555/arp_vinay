@@ -103,9 +103,13 @@
                 placeholder="Add comment for partial payment...">{{ $project->partial_comment }}</textarea>
         </td>
 
-        <td>
+        <td class="gap-2 d-flex justify-content-center">
             <button type="button" class="btn btn-outline-warning btn-sm moveProjectBtn" data-id="{{ $project->id }}">
                 <i class="bx bx-transfer"></i> Move
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm deleteProjectBtn"
+                data-id="{{ $project->id }}">
+                <i class="bx bx-trash"></i> Delete
             </button>
         </td>
     </tr>

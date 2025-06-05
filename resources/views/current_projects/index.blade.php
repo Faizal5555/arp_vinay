@@ -450,5 +450,51 @@
                 }
             });
         });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('deleteRow')) {
+                let id = e.target.dataset.id;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete the project!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e3342f',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let row = e.target.closest('tr'); // ✅ Now get row ONLY after confirm
+
+                        fetch(`{{ route('current_projects.deleteById') }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    id: id
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(response => {
+                                if (response.success) {
+                                    row.remove(); // ✅ Remove only if success
+                                    Swal.fire('Deleted!', response.message, 'success');
+                                    calculateTotals(); // Recalculate totals
+                                } else {
+                                    Swal.fire('Error', response.message || 'Something went wrong.',
+                                        'error');
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire('Error', 'Something went wrong.', 'error');
+                            });
+                    }
+                    // No action on cancel
+                });
+            }
+        });
     </script>
 @endpush

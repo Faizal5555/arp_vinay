@@ -416,4 +416,14 @@ public function uploadClosed(Request $request)
     return response()->json(['success' => true, 'message' => 'Closed Projects Imported Successfully!']);
 }
 
+
+public function delete(Request $request)
+{
+    $project = PendingProject::findOrFail($request->id);
+    $project->delete();
+
+    return response()->json(['success' => 1, 'message' => 'Project deleted successfully.']);
+}
+
+
 }

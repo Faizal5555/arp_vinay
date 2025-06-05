@@ -112,6 +112,7 @@
                             <th>Incentive Date</th>
                             <th>Invoice No</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -232,6 +233,16 @@
                                             Project Last Quarter</option>
                                     </select>
                                 </td>
+
+                                <td>
+                                    @if ($project->invoice_status == 'Paid' || $project->invoice_status == 'waveoff')
+                                        <button type="button" class="btn btn-outline-danger btn-sm deleteProjectBtn"
+                                            data-id="{{ $project->id }}">
+                                            <i class="bx bx-trash"></i> Delete
+                                        </button>
+                                    @endif
+                                </td>
+
 
                             </tr>
                         @endforeach
@@ -651,6 +662,52 @@
                     Swal.fire('Error', msg, 'error');
                 }
             });
+        });
+
+
+        // Delete function for closed projects
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.deleteProjectBtn')) {
+                const btn = e.target.closest('.deleteProjectBtn');
+                const id = btn.dataset.id;
+                const row = btn.closest('tr');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This project will be permanently deleted!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e3342f',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`{{ route('pending_projects.delete') }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    id: id
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire('Deleted!', data.message, 'success');
+                                    row.remove(); // Remove from UI
+                                    updateTotals(); // Recalculate totals
+                                } else {
+                                    Swal.fire('Error', data.message || 'Deletion failed.', 'error');
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire('Error', 'Something went wrong.', 'error');
+                            });
+                    }
+                });
+            }
         });
     </script>
 @endpush

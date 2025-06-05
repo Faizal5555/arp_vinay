@@ -185,6 +185,9 @@
 
 <td>
     @if ($hasData)
-        <button type="button" class="btn btn-secondary moveRow">Move</button>
+        <div class="gap-2 d-flex justify-content-center">
+            <button type="button" class="btn btn-secondary moveRow">Move</button>
+            <button type="button" class="btn btn-danger deleteRow" data-id="{{ $project->id }}">Delete</button>
+        </div>
     @endif
 </td>

@@ -86,8 +86,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pending-projects/download-sample', [App\Http\Controllers\PendingProjectController::class, 'downloadSample'])->name('pending_projects.download_sample');
     Route::get('/closed-projects/download-sample', [App\Http\Controllers\PendingProjectController::class, 'downloadClosedSample'])->name('closed_projects.download_sample');
     Route::post('/closed-projects/upload', [App\Http\Controllers\PendingProjectController::class, 'uploadClosed'])->name('closed_projects.upload');
-   
+    Route::post('/current_projects/delete', [App\Http\Controllers\CurrentProjectController::class, 'deleteById'])->name('current_projects.deleteById');
+    Route::post('/pending-projects/delete', [App\Http\Controllers\PendingProjectController::class, 'delete'])->name('pending_projects.delete');
 
+
+    
     Route::get('/search-projects', [App\Http\Controllers\ProjectSearchController::class, 'index'])->name('search.projects.index');
     Route::post('/search-projects/ajax', [App\Http\Controllers\ProjectSearchController::class, 'ajaxSearch'])->name('search.projects.ajax');
     Route::get('/search-projects/download', [App\Http\Controllers\ProjectSearchController::class, 'download'])->name('search.projects.download');

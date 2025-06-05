@@ -197,10 +197,14 @@
                                     <textarea name="partial_comment[]" class="mt-1 form-control partialCommentBox" rows="1"
                                         style="display: {{ $project->invoice_status == 'partial' ? 'block' : 'none' }}">{{ $project->partial_comment }}</textarea>
                                 </td>
-                                <td>
+                                <td class="gap-2 d-flex justify-content-center">
                                     <button type="button" class="btn btn-outline-warning btn-sm moveProjectBtn"
                                         data-id="{{ $project->id }}">
                                         <i class="bx bx-transfer"></i> Move
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm deleteProjectBtn"
+                                        data-id="{{ $project->id }}">
+                                        <i class="bx bx-trash"></i> Delete
                                     </button>
                                 </td>
                             </tr>
@@ -547,6 +551,7 @@
             bindTotalChangeListeners();
             bindMoveModal();
             bindSaveAll();
+            bindDeleteButtons();
         });
 
         // Search functionality
@@ -639,5 +644,52 @@
                 }
             });
         });
+
+        // Handle Delete button clicks
+        function bindDeleteButtons() {
+            document.querySelectorAll('.deleteProjectBtn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const row = this.closest('tr');
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "This will permanently delete the project!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e3342f',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`{{ route('pending_projects.delete') }}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id: id
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(response => {
+                                    if (response.success) {
+                                        row.remove();
+                                        Swal.fire('Deleted!', response.message, 'success');
+                                        updateTotals();
+                                    } else {
+                                        Swal.fire('Error', response.message ||
+                                            'Something went wrong.', 'error');
+                                    }
+                                })
+                                .catch(err => {
+                                    Swal.fire('Error', 'Something went wrong.', 'error');
+                                });
+                        }
+                    });
+                });
+            });
+        }
     </script>
 @endpush
