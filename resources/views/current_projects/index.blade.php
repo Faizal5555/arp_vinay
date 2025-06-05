@@ -465,8 +465,7 @@
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let row = e.target.closest('tr'); // ✅ Now get row ONLY after confirm
-
+                        // ✅ Only after confirm
                         fetch(`{{ route('current_projects.deleteById') }}`, {
                                 method: 'POST',
                                 headers: {
@@ -480,9 +479,11 @@
                             .then(res => res.json())
                             .then(response => {
                                 if (response.success) {
-                                    row.remove(); // ✅ Remove only if success
-                                    Swal.fire('Deleted!', response.message, 'success');
-                                    calculateTotals(); // Recalculate totals
+                                    Swal.fire('Deleted!', response.message, 'success')
+                                        .then(() => {
+                                            location
+                                        .reload(); // ✅ Reload the page after successful delete
+                                        });
                                 } else {
                                     Swal.fire('Error', response.message || 'Something went wrong.',
                                         'error');
