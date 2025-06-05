@@ -112,7 +112,7 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
         $client->delete();
-
+ 
         return response()->json(['success' => 1, 'message' => 'Client deleted successfully']);
     }
 

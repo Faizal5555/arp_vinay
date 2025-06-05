@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use App\Models\CurrentProject;
 use App\Models\Client;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class CurrentProjectImport implements ToModel, WithHeadingRow
 {
@@ -54,13 +55,17 @@ class CurrentProjectImport implements ToModel, WithHeadingRow
         return $client ? $client->id : null;
     }
 
-    protected function formatDate($value)
+      protected function formatDate($value)
     {
         if (!$value) {
             return null;
         }
 
         try {
+            if (is_numeric($value)) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
+
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
